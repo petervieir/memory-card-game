@@ -230,7 +230,7 @@ function saveDeploymentInfo(
   deployer: string,
   abi: ContractABI
 ): void {
-  const deploymentDir = path.join(process.cwd(), 'deployments', networkName.toLowerCase())
+  const deploymentDir = path.join(__dirname, '..', 'deployments', networkName.toLowerCase())
   
   // Ensure deployment directory exists
   if (!fs.existsSync(deploymentDir)) {
@@ -284,7 +284,7 @@ async function main(): Promise<void> {
       network,
       privateKey: process.env.STACKS_PRIVATE_KEY!,
       contractName: 'memory-game',
-      contractPath: path.join(process.cwd(), 'contracts', 'memory-game.clar'),
+      contractPath: path.join(__dirname, '..', 'contracts', 'memory-game.clar'),
       deployer
     }
 

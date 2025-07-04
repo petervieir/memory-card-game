@@ -37,7 +37,8 @@ function getNetwork(networkName: string) {
 
 function loadDeploymentInfo(networkName: string, contractName: string): DeploymentInfo {
   const deploymentPath = path.join(
-    process.cwd(),
+    __dirname,
+    '..',
     'deployments',
     networkName.toLowerCase(),
     `${contractName}-deployment.json`

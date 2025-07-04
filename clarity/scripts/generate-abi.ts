@@ -10,7 +10,7 @@ async function main(): Promise<void> {
     console.log('📚 Generating contract ABI...\n')
 
     const contractName = process.argv[2] || 'memory-game'
-    const contractPath = path.join(process.cwd(), 'contracts', `${contractName}.clar`)
+    const contractPath = path.join(__dirname, '..', 'contracts', `${contractName}.clar`)
     
     if (!fs.existsSync(contractPath)) {
       throw new Error(`Contract file not found: ${contractPath}`)
@@ -23,7 +23,7 @@ async function main(): Promise<void> {
     const abi = generateABI(contractSource)
     
     // Save ABI to output directory
-    const outputDir = path.join(process.cwd(), 'abi')
+    const outputDir = path.join(__dirname, '..', 'abi')
     if (!fs.existsSync(outputDir)) {
       fs.mkdirSync(outputDir, { recursive: true })
     }

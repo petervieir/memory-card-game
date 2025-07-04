@@ -1,0 +1,27 @@
+{
+  "name": "memory-game-contracts",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "test": "clarinet test",
+    "test:contract": "clarinet check",
+    "test:watch": "clarinet check --watch",
+    "deploy:testnet": "tsx scripts/deploy.ts testnet",
+    "deploy:mainnet": "NODE_ENV=production tsx scripts/deploy.ts mainnet",
+    "verify:testnet": "tsx scripts/verify-deployment.ts testnet",
+    "verify:mainnet": "tsx scripts/verify-deployment.ts mainnet",
+    "generate-abi": "tsx scripts/generate-abi.ts",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf deployments/**/*/contracts && rm -rf abi"
+  },
+  "dependencies": {
+    "@stacks/network": "^7.0.2",
+    "@stacks/transactions": "^7.1.0",
+    "dotenv": "^16.6.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.1",
+    "tsx": "^4.20.3",
+    "typescript": "^5"
+  }
+} 
