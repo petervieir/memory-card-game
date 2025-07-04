@@ -1,6 +1,0 @@
-[project]
-name = "memory-game"
-description = "A blockchain-powered memory card game on Stacks"
-
-[contracts.memory-game]
-path = "contracts/memory-game.clar" 
