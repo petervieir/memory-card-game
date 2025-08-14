@@ -1,0 +1,33 @@
+[project]
+name = "memory-card-game-contracts"
+description = "Stacks smart contracts for the Memory Card Game"
+authors = []
+telemetry = false
+cache_dir = "./.clarinet"
+requirements = []
+boot_contracts = []
+
+[contracts.main-contract]
+path = "contracts/core/main-contract.clar"
+clarity_version = 1
+
+[contracts.sip-009-trait]
+path = "contracts/traits/sip-009-trait.clar"
+clarity_version = 1
+
+[contracts.helpers]
+path = "contracts/utils/helpers.clar"
+clarity_version = 1
+
+[repl]
+costs_version = 2
+parser_version = 2
+
+[repl.analysis]
+passes = ["check_checker"]
+
+[repl.analysis.check_checker]
+strict = true
+trusted_sender = false
+trusted_caller = false
+callee_filter = false

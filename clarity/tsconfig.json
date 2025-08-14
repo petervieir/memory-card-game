@@ -1,0 +1,33 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "useDefineForClassFields": true,
+    "module": "ESNext",
+    "lib": ["ESNext"],
+    "skipLibCheck": true,
+
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+
+    "strict": true,
+    "noImplicitAny": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./tests/*"],
+      "@/helpers/*": ["./tests/helpers/*"]
+    }
+  },
+  "include": [
+    "node_modules/@hirosystems/clarinet-sdk/vitest-helpers/src",
+    "tests/**/*",
+    "contracts/**/*.clar"
+  ],
+  "exclude": ["node_modules", ".clarinet"]
+}

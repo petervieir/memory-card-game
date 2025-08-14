@@ -1,0 +1,24 @@
+[network]
+name = "mainnet"
+deployment_fee_rate = 10
+node_rpc_address = "https://api.hiro.so"
+
+[accounts.deployer]
+# Use your own mainnet deployer account
+# mnemonic = "your mainnet mnemonic here"
+# secret_key: "your secret key here"
+# stx_address: "your mainnet address here"
+# btc_address: "your mainnet btc address here"
+
+# WARNING: For mainnet deployment, you'll need to:
+# 1. Create a mainnet wallet with sufficient STX balance
+# 2. Use a hardware wallet or secure key management
+# 3. Test thoroughly on testnet first
+# 4. Replace the mnemonic above with your mainnet wallet mnemonic
+# 5. Update the deployment plan with your mainnet address
+
+[mainnet]
+# Mainnet specific configurations
+api_url = "https://api.hiro.so"
+explorer_url = "https://explorer.stacks.co"
+bitcoin_network = "mainnet" 

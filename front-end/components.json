@@ -1,0 +1,17 @@
+{
+  "$schema": "https://radix-ui.com/themes/docs/overview/getting-started",
+  "framework": "next",
+  "typescript": true,
+  "tailwind": {
+    "config": "tailwind.config.js",
+    "css": "src/styles/globals.css",
+    "baseColor": "slate",
+    "cssVariables": true
+  },
+  "aliases": {
+    "components": "@/components",
+    "utils": "@/lib/utils",
+    "ui": "@/components/ui"
+  },
+  "componentLibrary": "radix-ui"
+}

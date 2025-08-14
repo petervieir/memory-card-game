@@ -1,0 +1,17 @@
+{
+  "recommendations": [
+    // General Development
+    "esbenp.prettier-vscode",
+    "eamodio.gitlens",
+    "christian-kohler.path-intellisense",
+
+    // Project Management & Containers
+    "ms-vscode-remote.remote-containers",
+
+    // Monorepo & Configuration
+    "tamasfe.even-better-toml",
+
+    // General TypeScript Support
+    "ms-vscode.vscode-typescript-next"
+  ]
+}

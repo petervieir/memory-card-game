@@ -1,0 +1,32 @@
+{
+  "recommendations": [
+    // React & Next.js Development
+    "ms-vscode.vscode-typescript-next",
+    "formulahendry.auto-rename-tag",
+    "bradlc.vscode-tailwindcss",
+    "csstools.postcss",
+
+    // UI Development & Styling
+    "stylelint.vscode-stylelint",
+    "formulahendry.auto-close-tag",
+
+    // Code Quality & Formatting
+    "esbenp.prettier-vscode",
+    "dbaeumer.vscode-eslint",
+
+    // React Specific Tools
+    "ms-vscode.vscode-react-refactor",
+    "dsznajder.es7-react-js-snippets",
+
+    // Debugging & Testing
+    "ms-vscode.vscode-json",
+    "orta.vscode-jest",
+
+    // Component Development
+    "steoates.autoimport-es6-ts",
+    "christian-kohler.npm-intellisense",
+
+    // Stacks & Web3
+    "ms-vscode.vscode-json"
+  ]
+}

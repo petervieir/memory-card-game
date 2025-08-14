@@ -1,0 +1,25 @@
+---
+id: 1
+name: "Devnet deployment for local development"
+network: devnet
+stacks-node: "http://localhost:20443"
+bitcoin-node: "http://devnet:devnet@localhost:18443"
+plan:
+  batches:
+    - id: 0
+      transactions:
+        - contract-publish:
+            contract-name: sip-009-trait
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            cost: 5340
+            path: contracts/traits/sip-009-trait.clar
+        - contract-publish:
+            contract-name: helpers
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            cost: 3280
+            path: contracts/utils/helpers.clar
+        - contract-publish:
+            contract-name: main-contract
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            cost: 8640
+            path: contracts/core/main-contract.clar 

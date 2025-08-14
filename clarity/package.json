@@ -1,0 +1,51 @@
+{
+  "name": "@memory-card-game/contracts",
+  "version": "0.1.0",
+  "description": "Clarity smart contracts for the Memory Card Game",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "// Development": "",
+    "console": "clarinet console",
+    "console:devnet": "clarinet console --devnet",
+    "repl": "clarinet repl",
+    "// Contract Validation": "",
+    "check": "clarinet check",
+    "check:costs": "clarinet check --costs",
+    "analyze": "clarinet analyze",
+    "// Testing": "",
+    "test": "npm run test:unit",
+    "test:unit": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:contracts": "clarinet test",
+    "// Code Quality": "",
+    "format": "prettier --write \"**/*.{ts,js,json,md}\"",
+    "format:check": "prettier --check \"**/*.{ts,js,json,md}\"",
+    "lint": "eslint \"**/*.{ts,js}\"",
+    "lint:fix": "eslint \"**/*.{ts,js}\" --fix",
+    "type-check": "tsc --noEmit",
+    "// Deployment": "",
+    "deploy:devnet": "clarinet deployments apply -p deployments/default.devnet-plan.yaml",
+    "deploy:testnet": "clarinet deployments apply -p deployments/default.testnet-plan.yaml",
+    "deploy:simnet": "clarinet deployments apply -p deployments/default.simnet-plan.yaml",
+    "// Utilities": "",
+    "build": "npm run check",
+    "clean": "rm -rf .clarinet && rm -rf coverage",
+    "generate:docs": "clarinet docs-generate"
+  },
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@hirosystems/clarinet-sdk": "^3.0.1",
+    "@stacks/transactions": "^7.0.6",
+    "@types/node": "^22.15.17",
+    "prettier": "^3.0.3",
+    "typescript": "^5.3.3",
+    "vitest": "^3.1.3",
+    "vitest-environment-clarinet": "^2.3.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

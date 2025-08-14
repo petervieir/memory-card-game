@@ -1,0 +1,25 @@
+---
+id: 2
+name: "Testnet deployment"
+network: testnet
+stacks-node: "https://api.testnet.hiro.so"
+bitcoin-node: "https://api.testnet.hiro.so"
+plan:
+  batches:
+    - id: 0
+      transactions:
+        - contract-publish:
+            contract-name: sip-009-trait
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            cost: 5340
+            path: contracts/traits/sip-009-trait.clar
+        - contract-publish:
+            contract-name: helpers
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            cost: 3280
+            path: contracts/utils/helpers.clar
+        - contract-publish:
+            contract-name: main-contract
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            cost: 8640
+            path: contracts/core/main-contract.clar 
