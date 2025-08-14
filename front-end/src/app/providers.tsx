@@ -6,6 +6,7 @@ import { ThemeProvider } from "next-themes";
 import { Toaster } from "react-hot-toast";
 import { useState, useEffect } from "react";
 import { WalletProvider } from "@/contexts/WalletContext";
+import { WalletTracker } from "@/components/wallet/WalletTracker";
 
 export function Providers({
   children,
@@ -62,6 +63,7 @@ export function Providers({
         disableTransitionOnChange
       >
         <WalletProvider>
+          <WalletTracker />
           <Connect
             authOptions={{
               appDetails: {
