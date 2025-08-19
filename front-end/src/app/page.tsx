@@ -1,11 +1,12 @@
 "use client";
 
 import { ConnectWallet } from "@/components/wallet/ConnectWallet";
+import { PointsBadge } from "@/components/game/PointsBadge";
 import { usePointsStore } from "@/stores/usePointsStore";
 import Link from "next/link";
 
 export default function Home() {
-  const { points, totalEarned } = usePointsStore();
+  const { totalEarned } = usePointsStore();
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-background to-secondary/20">
@@ -22,15 +23,8 @@ export default function Home() {
 
           {/* Points Display */}
           {totalEarned > 0 && (
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 max-w-md mx-auto mb-8">
-              <div className="flex justify-between text-sm mb-1">
-                <span>Current Points:</span>
-                <span className="font-bold text-green-400">{points}</span>
-              </div>
-              <div className="flex justify-between text-xs text-muted-foreground">
-                <span>Total Earned:</span>
-                <span>{totalEarned}</span>
-              </div>
+            <div className="max-w-md mx-auto mb-8 flex justify-center">
+              <PointsBadge />
             </div>
           )}
         </div>

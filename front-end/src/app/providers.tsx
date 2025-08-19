@@ -67,7 +67,7 @@ export function Providers({
           <Connect
             authOptions={{
               appDetails: {
-                name: "Stacks dApp Template (Next.js)",
+                name: "Memory Card Game",
                 icon: `${process.env.NEXT_PUBLIC_AUTH_ORIGIN || "http://localhost:3000"}/icon.png`,
               },
             }}
