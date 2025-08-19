@@ -2,6 +2,7 @@
 
 import { GameBoard } from '@/components/game/GameBoard';
 import { usePointsStore } from '@/stores/usePointsStore';
+import { PointsBadge } from '@/components/game/PointsBadge';
 import Link from 'next/link';
 
 export default function GamePage() {
@@ -21,15 +22,8 @@ export default function GamePage() {
           <h1 className="text-3xl font-bold mb-4">Memory Card Game</h1>
           
           {/* Points Display */}
-          <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 max-w-sm mx-auto mb-8">
-            <div className="flex justify-between text-sm mb-1">
-              <span>Current Points:</span>
-              <span className="font-bold text-green-400">{points}</span>
-            </div>
-            <div className="flex justify-between text-xs text-muted-foreground">
-              <span>Total Earned:</span>
-              <span>{totalEarned}</span>
-            </div>
+          <div className="max-w-sm mx-auto mb-8 flex justify-center">
+            <PointsBadge />
           </div>
         </div>
 
