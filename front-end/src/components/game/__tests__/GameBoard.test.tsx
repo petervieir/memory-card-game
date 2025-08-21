@@ -479,6 +479,44 @@ describe('GameBoard', () => {
         expect(screen.getByText(/Points earned: \d+/)).toBeInTheDocument();
       }, { timeout: 5000 });
     }, 15000);
+
+    it('should prevent duplicate point awards on completion', async () => {
+      render(<GameBoard />);
+
+      await waitFor(() => {
+        const cards = screen.getAllByTestId('game-card');
+        expect(cards).toHaveLength(16);
+      });
+
+      const cards = screen.getAllByTestId('game-card');
+      await completeAllMatches(cards);
+
+      // Wait for initial completion
+      await waitFor(() => {
+        expect(mockAddPoints).toHaveBeenCalledTimes(1);
+        expect(mockIncrementGamesPlayed).toHaveBeenCalledTimes(1);
+      }, { timeout: 5000 });
+
+      // Force a re-render/state update that might trigger completion logic again
+      // This simulates scenarios where useEffect might run multiple times
+      const newGameButton = screen.getByText('New Game');
+      fireEvent.click(newGameButton);
+      
+      // Wait for new game to initialize
+      await waitFor(() => {
+        expect(screen.getByText('Moves: 0')).toBeInTheDocument();
+      });
+
+      // Complete the new game
+      const newCards = screen.getAllByTestId('game-card');
+      await completeAllMatches(newCards);
+
+      // Verify points were awarded for new game completion, but total calls are only 2
+      await waitFor(() => {
+        expect(mockAddPoints).toHaveBeenCalledTimes(2);
+        expect(mockIncrementGamesPlayed).toHaveBeenCalledTimes(2);
+      }, { timeout: 5000 });
+    }, 20000);
   });
 
   describe('New Game Functionality', () => {
@@ -519,6 +557,153 @@ describe('GameBoard', () => {
           expect(card.getAttribute('data-flipped')).toBe('false');
           expect(card.getAttribute('data-matched')).toBe('false');
         });
+      });
+    });
+  });
+
+  describe('Image Pool Management', () => {
+    beforeEach(() => {
+      mockUseWallet.mockReturnValue({
+        address: 'SP1HTBVD3JG9C05J7HBJTHGR0GGW7KXW28M5JS8QE',
+        userSession: {} as any,
+        refresh: jest.fn(),
+      });
+    });
+
+    it('should initialize with pool size 8 on first game', async () => {
+      render(<GameBoard />);
+
+      // After game initialization, pool should be at 8
+      await waitFor(() => {
+        const cards = screen.getAllByTestId('game-card');
+        expect(cards).toHaveLength(16);
+        expect(screen.getByText('Pool: 8/32')).toBeInTheDocument();
+      });
+    });
+
+    it('should grow pool progressively each new game until reaching 32', async () => {
+      // Mock a larger image set for this test
+      const largeImageSet = Array.from({ length: 50 }, (_, i) => `/images/${String(i + 1).padStart(2, '0')}.jpg`);
+      (global.fetch as jest.Mock).mockResolvedValue({
+        json: () => Promise.resolve(largeImageSet),
+      });
+
+      render(<GameBoard />);
+
+      // Wait for initial game (starts with 8)
+      await waitFor(() => {
+        const cards = screen.getAllByTestId('game-card');
+        expect(cards).toHaveLength(16);
+        expect(screen.getByText('Pool: 8/32')).toBeInTheDocument();
+      });
+
+      const newGameButton = screen.getByText('New Game');
+      let previousPoolSize = 8;
+
+      // Test multiple new games to verify pool growth
+      for (let i = 0; i < 7; i++) { // Should reach 8 + (4 * 6) = 32
+        fireEvent.click(newGameButton);
+
+        await waitFor(() => {
+          const poolText = screen.getByText(/Pool: \d+\/32/);
+          const currentPoolSize = parseInt(poolText.textContent?.match(/Pool: (\d+)\/32/)?.[1] || '0');
+          
+          // Pool should grow or stay the same, but not shrink
+          expect(currentPoolSize).toBeGreaterThanOrEqual(previousPoolSize);
+          
+          // Should eventually reach 32 or stop growing
+          expect(currentPoolSize).toBeLessThanOrEqual(32);
+          
+          // Pool size logged for verification: ${currentPoolSize}
+          previousPoolSize = currentPoolSize;
+        });
+      }
+
+      // Final check - should be at 32
+      await waitFor(() => {
+        expect(screen.getByText('Pool: 32/32')).toBeInTheDocument();
+      });
+    });
+
+    it('should maintain pool size at 32 and rotate images when full', async () => {
+      // Mock a larger image set to test rotation
+      const largeImageSet = Array.from({ length: 60 }, (_, i) => `/images/${String(i + 1).padStart(2, '0')}.jpg`);
+      (global.fetch as jest.Mock).mockResolvedValue({
+        json: () => Promise.resolve(largeImageSet),
+      });
+
+      render(<GameBoard />);
+
+      // Wait for initial load
+      await waitFor(() => {
+        const cards = screen.getAllByTestId('game-card');
+        expect(cards).toHaveLength(16);
+      });
+
+      const newGameButton = screen.getByText('New Game');
+
+      // Click new game multiple times to fill the pool to 32
+      for (let i = 0; i < 7; i++) { // 8 + (4 * 6) = 32
+        fireEvent.click(newGameButton);
+        await waitFor(() => {
+          const cards = screen.getAllByTestId('game-card');
+          expect(cards).toHaveLength(16);
+        });
+      }
+
+      // Pool should be at 32
+      await waitFor(() => {
+        expect(screen.getByText('Pool: 32/32')).toBeInTheDocument();
+      });
+
+      // Next new game should maintain pool at 32 (rotation)
+      fireEvent.click(newGameButton);
+
+      await waitFor(() => {
+        expect(screen.getByText('Pool: 32/32')).toBeInTheDocument();
+        const cards = screen.getAllByTestId('game-card');
+        expect(cards).toHaveLength(16);
+      });
+    });
+
+    it('should handle pool rotation when all images have been seen', async () => {
+      // Mock exactly 32 images (equal to pool size)
+      const exactPoolImages = Array.from({ length: 32 }, (_, i) => `/images/${String(i + 1).padStart(2, '0')}.jpg`);
+      (global.fetch as jest.Mock).mockResolvedValue({
+        json: () => Promise.resolve(exactPoolImages),
+      });
+
+      render(<GameBoard />);
+
+      // Wait for initial load
+      await waitFor(() => {
+        const cards = screen.getAllByTestId('game-card');
+        expect(cards).toHaveLength(16);
+      });
+
+      const newGameButton = screen.getByText('New Game');
+
+      // Fill the pool to exactly 32 (all available images)
+      for (let i = 0; i < 6; i++) { // 8 + (4 * 6) = 32
+        fireEvent.click(newGameButton);
+        await waitFor(() => {
+          const cards = screen.getAllByTestId('game-card');
+          expect(cards).toHaveLength(16);
+        });
+      }
+
+      // Pool should be at 32
+      await waitFor(() => {
+        expect(screen.getByText('Pool: 32/32')).toBeInTheDocument();
+      });
+
+      // Next new game should still maintain pool at 32 (internal rotation)
+      fireEvent.click(newGameButton);
+
+      await waitFor(() => {
+        expect(screen.getByText('Pool: 32/32')).toBeInTheDocument();
+        const cards = screen.getAllByTestId('game-card');
+        expect(cards).toHaveLength(16);
       });
     });
   });
