@@ -23,3 +23,8 @@ plan:
             expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             cost: 8640
             path: contracts/core/main-contract.clar 
+        - contract-publish:
+            contract-name: game-scores
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            cost: 2000
+            path: contracts/core/game-scores.clar

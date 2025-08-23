@@ -19,6 +19,10 @@ clarity_version = 1
 path = "contracts/utils/helpers.clar"
 clarity_version = 1
 
+[contracts.game-scores]
+path = "contracts/core/game-scores.clar"
+clarity_version = 1
+
 [repl]
 costs_version = 2
 parser_version = 2
