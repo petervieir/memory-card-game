@@ -43,7 +43,13 @@ fi
 echo "🔧 Setting up environment files..."
 if [ ! -f "front-end/.env.local" ]; then
     echo "📄 Creating front-end/.env.local from template..."
-    cp front-end/.env.example front-end/.env.local
+    if [ -f "front-end/.env.local.example" ]; then
+        cp front-end/.env.local.example front-end/.env.local
+    else
+        echo "⚠️  front-end/.env.local.example not found. Creating a default .env.local..."
+        echo "NEXT_PUBLIC_STACKS_NETWORK=mocknet" > front-end/.env.local
+        echo "NEXT_PUBLIC_AUTH_ORIGIN=http://localhost:3000" >> front-end/.env.local
+    fi
 fi
 
 if [ ! -f "clarity/.env.local" ]; then

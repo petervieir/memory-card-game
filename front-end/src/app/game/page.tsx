@@ -3,6 +3,7 @@
 import { GameBoard } from '@/components/game/GameBoard';
 import { usePointsStore } from '@/stores/usePointsStore';
 import { PointsBadge } from '@/components/game/PointsBadge';
+import { BalanceNetworkBadge } from '@/components/wallet/BalanceNetworkBadge';
 import Link from 'next/link';
 
 export default function GamePage() {
@@ -19,6 +20,12 @@ export default function GamePage() {
           >
             ← Back to Home
           </Link>
+          
+          {/* Balance and Network Badge */}
+          <div className="flex justify-center mb-4">
+            <BalanceNetworkBadge />
+          </div>
+          
           <h1 className="text-3xl font-bold mb-4">Memory Card Game</h1>
           
           {/* Points Display */}

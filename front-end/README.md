@@ -43,6 +43,9 @@ You can add this to a `.env.local` file:
 
 ```
 NEXT_PUBLIC_STACKS_NETWORK=mocknet
+NEXT_PUBLIC_AUTH_ORIGIN=http://localhost:3000
+
+> Tip: You can copy from `.env.local.example` if present.
 ```
 
 ## Project Structure

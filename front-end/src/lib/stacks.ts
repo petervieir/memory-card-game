@@ -4,7 +4,7 @@ import { StacksMainnet, StacksTestnet, StacksMocknet } from "@stacks/network";
  * Get the appropriate Stacks network based on environment
  */
 export function getStacksNetwork() {
-  const networkType = process.env.NEXT_PUBLIC_STACKS_NETWORK || "mocknet";
+  const networkType = process.env.NEXT_PUBLIC_STACKS_NETWORK || "testnet";
 
   switch (networkType) {
     case "mainnet":
@@ -15,7 +15,7 @@ export function getStacksNetwork() {
     case "devnet":
       return new StacksMocknet();
     default:
-      return new StacksMocknet();
+      return new StacksTestnet();
   }
 }
 

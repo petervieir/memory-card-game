@@ -55,8 +55,22 @@ npm install
 
 ```bash
 # Copy environment templates
-cp front-end/.env.example front-end/.env.local
+cp front-end/.env.local.example front-end/.env.local
 cp clarity/.env.example clarity/.env.local
+```
+
+#### Frontend environment variables
+
+Create or edit `front-end/.env.local` with the following variables:
+
+```bash
+# Stacks network to use by the frontend and hooks
+# Options: mocknet (devnet), testnet, mainnet
+NEXT_PUBLIC_STACKS_NETWORK=mocknet
+
+# Public origin used for wallet auth callbacks and metadata icons
+# In dev, this should point to your local frontend URL
+NEXT_PUBLIC_AUTH_ORIGIN=http://localhost:3000
 ```
 
 ### Install Clarinet
