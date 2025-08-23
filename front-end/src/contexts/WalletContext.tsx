@@ -29,14 +29,29 @@ export const WalletProvider = ({ children }: { children: React.ReactNode }) => {
   const refresh = useCallback(() => {
     if (userSession.isUserSignedIn()) {
       const userData = userSession.loadUserData();
-      setAddress(
-        userData.profile.stxAddress.mainnet ||
-          userData.profile.stxAddress.testnet
-      );
+      const networkType = process.env.NEXT_PUBLIC_STACKS_NETWORK || "testnet";
+      // Choose correct address by network
+      if (networkType === "mainnet") {
+        setAddress(userData?.profile?.stxAddress?.mainnet ?? null);
+      } else {
+        // testnet or mocknet/devnet -> use testnet address
+        setAddress(userData?.profile?.stxAddress?.testnet ?? null);
+      }
     } else {
       setAddress(null);
     }
   }, []);
+
+  // Keep address in sync across tabs and wallet state changes
+  useEffect(() => {
+    const onStorage = (event: StorageEvent) => {
+      if (event.key === "blockstack-session") {
+        refresh();
+      }
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, [refresh]);
 
   useEffect(() => {
     refresh();

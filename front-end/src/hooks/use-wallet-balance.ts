@@ -25,7 +25,10 @@ export function useWalletBalance() {
       const stacksNetwork = getStacksNetwork();
       const apiUrl = stacksNetwork.coreApiUrl;
 
-      const response = await fetch(`${apiUrl}/v1/accounts/${address}`);
+      // Use Extended API for balances
+      const response = await fetch(
+        `${apiUrl}/extended/v1/address/${address}/balances`
+      );
 
       // Handle 404 for new/unfunded addresses
       if (response.status === 404) {
@@ -42,7 +45,15 @@ export function useWalletBalance() {
         throw new Error(`Failed to fetch balance: ${response.statusText}`);
       }
 
-      return response.json();
+      const json = await response.json();
+      // Map Extended API shape to expected shape
+      const stx = json?.stx || {};
+      return {
+        balance: stx.balance ?? "0",
+        locked: stx.locked ?? "0",
+        unlock_height: stx.unlock_height ?? 0,
+        nonce: 0,
+      };
     },
     enabled: !!address,
     refetchInterval: 30000, // Refetch every 30 seconds
