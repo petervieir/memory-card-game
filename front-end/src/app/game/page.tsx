@@ -1,13 +1,13 @@
 "use client";
 
 import { GameBoard } from '@/components/game/GameBoard';
-import { usePointsStore } from '@/stores/usePointsStore';
+// import { usePointsStore } from '@/stores/usePointsStore';
 import { PointsBadge } from '@/components/game/PointsBadge';
 import { BalanceNetworkBadge } from '@/components/wallet/BalanceNetworkBadge';
 import Link from 'next/link';
 
 export default function GamePage() {
-  const { points, totalEarned } = usePointsStore();
+  // const { points, totalEarned } = usePointsStore();
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-background to-secondary/20">
