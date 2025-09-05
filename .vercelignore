@@ -1,0 +1,7 @@
+clarity/
+node_modules/
+*.log
+.env.local
+.env.*.local
+.clarinet/
+coverage/
