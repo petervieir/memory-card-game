@@ -5,9 +5,9 @@ node_rpc_address = "https://api.testnet.hiro.so"
 
 [accounts.deployer]
 # Use your own testnet deployer account
-mnemonic = "soul corn service beef spread into tube unaware deny stem inhale legal lion rely network cage genius fortune legal tired antenna slab filter when"
+# mnemonic = "your testnet mnemonic here"
 # secret_key: "your secret key here"
-stx_address = "ST2ZPVCRZZ2T6V8DT7JCMXHRGHH7ZT7RYHPBJDWC0"
+# stx_address: "your testnet address here"
 # btc_address: "your testnet btc address here"
 
 # Note: For testnet deployment, you'll need to:

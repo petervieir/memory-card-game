@@ -17,18 +17,10 @@ describe("Basic Setup Tests", () => {
   });
 });
 
-describe("Contract Validation Tests", () => {
-  it("should validate that contracts compile", () => {
-    // This is a placeholder test - in a real scenario, you would:
-    // 1. Use clarinet console to test contracts
-    // 2. Use clarinet check to validate syntax
-    // 3. Use clarinet deployments to test on simnet
-    
-    // For now, we'll just verify the test framework works
-    expect(true).toBe(true);
-  });
-
-  it.todo("should test game-scores contract functions");
-  it.todo("should test main-contract functions");
-  it.todo("should test helper utilities");
+// TODO: Add your Clarity contract tests here
+// Example structure for when you add contracts:
+describe("Contract Tests", () => {
+  it.todo("should deploy your contract successfully");
+  it.todo("should test your contract functions");
+  it.todo("should test error conditions");
 });

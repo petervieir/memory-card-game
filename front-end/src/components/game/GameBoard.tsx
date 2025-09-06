@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { Card } from './Card';
 import { usePointsStore } from '@/stores/usePointsStore';
 import { useWallet } from '@/contexts/WalletContext';
-import { submitScoreTx } from '@/lib/tx';
 
 
 // Image pool management
@@ -129,7 +128,6 @@ export function GameBoard() {
   const [flippedCards, setFlippedCards] = useState<number[]>([]);
   const [moves, setMoves] = useState(0);
   const [isGameComplete, setIsGameComplete] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const { addPoints, incrementGamesPlayed } = usePointsStore();
   const { images, loading, selectImagesFromPool, imagePool } = useImages();
   const { address } = useWallet();
@@ -232,20 +230,6 @@ export function GameBoard() {
     setFlippedCards(prev => [...prev, cardId]);
   };
 
-  const points = 100 + Math.max(0, 20 - moves) * 5;
-  const submitEnabled = (process.env.NEXT_PUBLIC_ENABLE_SUBMIT_SCORE || '').toLowerCase() === 'true' || (process.env.NEXT_PUBLIC_ENABLE_SUBMIT_SCORE || '').toLowerCase() === '1';
-
-  const onSubmitScore = async () => {
-    try {
-      setIsSubmitting(true);
-      await submitScoreTx({ score: points });
-    } catch (e) {
-      console.error('Submit score error:', e);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   if (loading) {
     return (
       <div className="max-w-md mx-auto text-center p-8">
@@ -290,19 +274,8 @@ export function GameBoard() {
           <h3 className="font-bold text-green-400 mb-2">🎉 Congratulations!</h3>
           <p className="text-sm">
             Game completed in {moves} moves!<br/>
-            Points earned: {points}
+            Points earned: {100 + Math.max(0, 20 - moves) * 5}
           </p>
-          {submitEnabled && (
-            <div className="mt-4">
-              <button
-                onClick={onSubmitScore}
-                disabled={isSubmitting}
-                className="px-4 py-2 text-sm bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 rounded transition-colors"
-              >
-                {isSubmitting ? 'Submitting...' : 'Submit to chain'}
-              </button>
-            </div>
-          )}
         </div>
       )}
 
