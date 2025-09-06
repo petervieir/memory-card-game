@@ -10,21 +10,21 @@ plan:
       transactions:
         - contract-publish:
             contract-name: sip-009-trait
-            expected-sender: ${TESTNET_DEPLOYER_ADDRESS}
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             cost: 5340
             path: contracts/traits/sip-009-trait.clar
         - contract-publish:
             contract-name: helpers
-            expected-sender: ${TESTNET_DEPLOYER_ADDRESS}
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             cost: 3280
             path: contracts/utils/helpers.clar
         - contract-publish:
-            contract-name: game-scores
-            expected-sender: ${TESTNET_DEPLOYER_ADDRESS}
-            cost: 4200
-            path: contracts/core/game-scores.clar
-        - contract-publish:
             contract-name: main-contract
-            expected-sender: ${TESTNET_DEPLOYER_ADDRESS}
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             cost: 8640
-            path: contracts/core/main-contract.clar
+            path: contracts/core/main-contract.clar 
+        - contract-publish:
+            contract-name: game-scores
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            cost: 2000
+            path: contracts/core/game-scores.clar
