@@ -1,0 +1,11 @@
+{
+  "installCommand": "npm ci",
+  "buildCommand": "npm run build:frontend",
+  "outputDirectory": "front-end/.next",
+  "framework": "nextjs",
+  "functions": {
+    "front-end/src/app/api/**/*.ts": {
+      "runtime": "nodejs18.x"
+    }
+  }
+}
