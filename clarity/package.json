@@ -40,10 +40,11 @@
     "@hirosystems/clarinet-sdk": "^3.0.1",
     "@stacks/transactions": "^7.0.6",
     "@types/node": "^22.15.17",
+    "picocolors": "^1.0.0",
     "prettier": "^3.0.3",
     "typescript": "^5.3.3",
-    "vitest": "^1.6.0",
-    "vitest-environment-clarinet": "2.2.1"
+    "vitest": "^2.1.9",
+    "vitest-environment-clarinet": "^2.3.0"
   },
   "engines": {
     "node": ">=18.0.0"

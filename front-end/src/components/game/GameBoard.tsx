@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Card } from './Card';
 import { usePointsStore } from '@/stores/usePointsStore';
+import { submitScore } from '@/lib/tx';
+import toast from 'react-hot-toast';
 import { useWallet } from '@/contexts/WalletContext';
 
 
@@ -215,9 +217,22 @@ export function GameBoard() {
       hasAwardedRef.current = true;
       const basePoints = 100;
       const efficiency_bonus = Math.max(0, 20 - moves) * 5;
-      addPoints(basePoints + efficiency_bonus);
+      const score = basePoints + efficiency_bonus;
+
+      addPoints(score);
       incrementGamesPlayed();
       setIsGameComplete(true);
+
+      // Submit score on-chain (best-effort)
+      submitScore(score)
+        .then(({ txId }) => {
+          toast.success('Score submitted on-chain!', { id: 'submit-score' });
+          console.log('submit-score txId:', txId);
+        })
+        .catch((err) => {
+          console.warn('Score submission skipped/failed:', err?.message || err);
+          toast.error('Could not submit score on-chain');
+        });
     }
   }, [cards, moves, addPoints, incrementGamesPlayed, address]);
 
