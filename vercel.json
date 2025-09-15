@@ -1,11 +1,4 @@
 {
   "installCommand": "npm ci",
-  "buildCommand": "cd front-end && npm run build",
-  "outputDirectory": "front-end/.next",
-  "framework": "nextjs",
-  "functions": {
-    "front-end/src/app/api/**/*.ts": {
-      "runtime": "nodejs20.x"
-    }
-  }
+  "buildCommand": "npm run build"
 }
