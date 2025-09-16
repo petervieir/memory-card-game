@@ -4,20 +4,19 @@ deployment_fee_rate = 10
 node_rpc_address = "https://api.testnet.hiro.so"
 
 [accounts.deployer]
-# Use your own testnet deployer account
-# mnemonic = "your testnet mnemonic here"
-# secret_key: "your secret key here"
-# stx_address: "your testnet address here"
-# btc_address: "your testnet btc address here"
+# IMPORTANT: Add your testnet wallet mnemonic here for deployment
+# mnemonic = "your testnet mnemonic phrase here (12 or 24 words)"
+stx_address = "ST2ZPVCRZZ2T6V8DT7JCMXHRGHH7ZT7RYHPBJDWC0"
+# btc_address = "your testnet btc address here"
 
 # Note: For testnet deployment, you'll need to:
 # 1. Create a testnet wallet
 # 2. Get testnet STX from the faucet: https://explorer.stacks.co/sandbox/faucet
 # 3. Replace the mnemonic above with your testnet wallet mnemonic
-# 4. Update the deployment plan with your testnet address
+# 4. Copy this file to settings/Testnet.toml (which is gitignored)
 
 [testnet]
 # Testnet specific configurations
 api_url = "https://api.testnet.hiro.so"
 explorer_url = "https://explorer.stacks.co/?chain=testnet"
-bitcoin_network = "testnet" 
+bitcoin_network = "testnet"
