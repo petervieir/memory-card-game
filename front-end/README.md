@@ -1,15 +1,19 @@
 # Memory Card Game Frontend
 
-Frontend for the Memory Card Game on Stacks, with a focus on simplicity and Devnet-first development.
+A fully functional memory card game frontend deployed on Vercel with on-chain score tracking on Stacks testnet.
+
+🎮 **[Play Live Demo](https://memory-card-game-git-main-peters-projects-f3199619.vercel.app)**
 
 ## Features
 
-- Next.js 13+ (App Router)
-- Radix UI + TailwindCSS for beautiful, accessible components
-- Stacks wallet connect/disconnect (Hiro/Leather)
-- Zustand, React Query, and best-practice project structure
-- Devnet (mocknet) ready by default
-- Easily switch between Devnet, Testnet, and Mainnet
+- **🎮 Complete Game**: Memory card matching with emoji cards
+- **⛓️ On-Chain Scores**: Best scores stored on Stacks blockchain
+- **📊 Performance Monitoring**: Vercel Speed Insights and Analytics
+- **🚀 Next.js 13+** with App Router and TypeScript
+- **🎨 Modern UI**: Radix UI + TailwindCSS with beautiful design
+- **🔗 Wallet Integration**: Hiro/Leather wallet support
+- **📱 Responsive**: Works perfectly on desktop and mobile
+- **🌐 Multi-Network**: Devnet, Testnet, and Mainnet support
 
 ## Getting Started
 
@@ -31,21 +35,30 @@ Frontend for the Memory Card Game on Stacks, with a focus on simplicity and Devn
 
 3. **Connect your Stacks wallet** (Hiro/Leather) on Devnet (mocknet).
 
-## Switching Networks
+## Environment Configuration
 
-By default, the project uses **Devnet (mocknet)**. To switch networks, set the environment variable:
+### For Local Development
 
-```bash
-NEXT_PUBLIC_STACKS_NETWORK=mainnet   # or testnet, or mocknet
-```
+Create a `.env.local` file:
 
-You can add this to a `.env.local` file:
-
-```
-NEXT_PUBLIC_STACKS_NETWORK=mocknet
+```env
+# Network configuration
+NEXT_PUBLIC_STACKS_NETWORK=testnet
 NEXT_PUBLIC_AUTH_ORIGIN=http://localhost:3000
 
-> Tip: You can copy from `.env.local.example` if present.
+# Contract configuration (testnet)
+NEXT_PUBLIC_GAME_SCORES_CONTRACT_ADDRESS=ST2ZPVCRZZ2T6V8DT7JCMXHRGHH7ZT7RYHPBJDWC0
+NEXT_PUBLIC_GAME_SCORES_CONTRACT_NAME=game-scores
+```
+
+### For Production (Vercel)
+
+Add these environment variables in your Vercel project settings:
+
+```env
+NEXT_PUBLIC_STACKS_NETWORK=testnet
+NEXT_PUBLIC_GAME_SCORES_CONTRACT_ADDRESS=ST2ZPVCRZZ2T6V8DT7JCMXHRGHH7ZT7RYHPBJDWC0
+NEXT_PUBLIC_GAME_SCORES_CONTRACT_NAME=game-scores
 ```
 
 ## Project Structure
@@ -56,15 +69,28 @@ NEXT_PUBLIC_AUTH_ORIGIN=http://localhost:3000
 - `src/contexts/WalletContext.tsx` — Global wallet state/context
 - `src/lib/stacks.ts` — Stacks network config and utilities
 
-## What’s Included
+## What's Included
 
-- No example contracts or voting logic — just the essentials to start your own dApp
-- All packages and structure for rapid Stacks dApp development
+- **Complete Memory Card Game** with scoring and on-chain leaderboard
+- **Vercel Speed Insights** for performance monitoring
+- **Vercel Analytics** for user behavior tracking
+- **Wallet Integration** with Hiro/Leather support
+- **Modern UI Components** with Radix UI and TailwindCSS
+- **Responsive Design** that works on all devices
 
-## Next Steps
+## Game Features
 
-- Add your own pages, components, and contract logic as needed
-- Deploy your own Clarity contracts to Devnet, Testnet, or Mainnet
+- **🎯 Memory Challenge**: Match pairs of emoji cards
+- **📊 Smart Scoring**: Base points (100) + efficiency bonus for fewer moves
+- **🏆 On-Chain Leaderboard**: Best scores permanently stored on Stacks
+- **💰 Wallet Required**: Connect wallet to play and earn points
+- **🎨 Beautiful UI**: Modern, accessible design with animations
+
+## Performance Monitoring
+
+This app includes:
+- **Speed Insights**: Core Web Vitals and performance metrics
+- **Analytics**: Page views, user behavior, and geographic data
 
 ---
 
