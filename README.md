@@ -8,16 +8,21 @@ A fully functional decentralized memory card game built on Stacks with Next.js, 
 
 ## ✨ Features
 
-- **🎮 Fully Functional Game** - Memory card matching with scoring system
-- **⛓️ On-Chain Score Tracking** - Best scores stored on Stacks testnet
-- **🚀 Next.js 13+** with App Router and TypeScript
-- **🎨 Modern UI** - Radix UI + TailwindCSS with dark/light mode
-- **📊 Performance Monitoring** - Vercel Speed Insights and Analytics
-- **🧪 Testing Ready** - Vitest for contracts, Jest for frontend
-- **📦 Monorepo** - Organized workspace with Turborepo
-- **🔧 Developer Experience** - ESLint, Prettier, VS Code extensions
-- **🌐 Multi-Network** - Devnet, Testnet, Mainnet configurations
-- **📜 MIT Licensed** - Open source with proper license structure
+- **🎮 Fully Functional Game** - Memory card matching with 6 difficulty levels and progressive unlocking
+- **🎯 Advanced Difficulty System** - Beginner (12 cards) to Master (32 cards) with dynamic scoring multipliers
+- **🏆 Comprehensive Achievement System** - 13 achievements across 4 categories (Efficiency, Mastery, Milestones, Special)
+- **📱 Dynamic Responsive Design** - Cards auto-resize based on screen size and grid density for optimal experience
+- **⛓️ On-Chain Score Tracking** - Submit high scores to Stacks testnet with wallet-specific leaderboards
+- **🚀 Modern Tech Stack** - Next.js 13+ with App Router, TypeScript, and React 18
+- **🎨 Beautiful UI** - Radix UI + TailwindCSS with smooth animations and visual feedback
+- **📊 Performance Monitoring** - Vercel Speed Insights and Analytics for optimization
+- **🧪 Comprehensive Testing** - Vitest for smart contracts, Jest for frontend components
+- **📦 Organized Monorepo** - Turborepo workspace with clear separation of concerns
+- **🔧 Excellent DX** - ESLint, Prettier, TypeScript, VS Code extensions
+- **🌐 Multi-Network Support** - Devnet, Testnet, Mainnet configurations with environment switching
+- **📜 Open Source** - MIT Licensed with proper package-level licensing
+
+📚 **[View All Features](./FEATURES.md)** | 📝 **[Changelog](./CHANGELOG.md)**
 
 ## 🎯 Live Deployment
 
@@ -84,6 +89,7 @@ npm run dev
 | [🔨 Development Guide](./docs/DEVELOPMENT.md)   | Coding patterns and workflows |
 | [🚀 Deployment Guide](./deployment/README.md)   | Environment deployments       |
 | [📋 Recommendations](./docs/RECOMMENDATIONS.md) | Optimization suggestions      |
+| [🤝 Contributing Guide](./CONTRIBUTING.md)      | How to contribute to the project |
 
 ## 📜 License
 
@@ -100,11 +106,30 @@ Each package can be distributed independently under its respective MIT license.
 
 ## 🎮 Game Features
 
-- **Memory Card Matching**: Match pairs of emoji cards
-- **Scoring System**: Base points (100) + efficiency bonus
-- **On-Chain Leaderboard**: Best scores stored on Stacks blockchain
-- **Wallet Integration**: Connect Hiro/Leather wallets
-- **Responsive Design**: Works on desktop and mobile
+### 🎯 Core Gameplay
+- **Memory Card Matching**: Match pairs of high-quality image cards across 6 difficulty levels
+- **Progressive Difficulty**: Unlock new challenges by completing previous levels (12 to 32 cards)
+- **Dynamic Grid Layouts**: From 4×3 grids to challenging 8×4 layouts
+- **Smart Image Pool**: 56+ unique images with intelligent rotation system
+
+### 📊 Advanced Scoring
+- **Dynamic Base Points**: 120-400 points based on difficulty level
+- **Efficiency Bonuses**: Earn up to 5 points per move saved under the bonus threshold
+- **Difficulty Multipliers**: 1.0× to 2.5× multipliers for higher difficulties
+- **Achievement Integration**: Unlock achievements for perfect games, speed runs, and milestones
+
+### 🏆 Achievement System
+- **13 Unique Achievements**: Spanning 4 categories for comprehensive progression tracking
+- **Move Efficiency**: Perfect Game, Speed Master, Efficiency Expert
+- **Difficulty Mastery**: Complete each difficulty level for unique badges
+- **Milestones**: First Victory, Veteran Player (10 games), Century Club (100 games)
+- **Special Rewards**: High Scorer achievement for exceptional performance
+
+### 🔗 Blockchain Integration
+- **On-Chain Leaderboards**: Submit high scores to Stacks testnet smart contracts
+- **Wallet-Specific Progress**: All achievements and scores tied to your wallet address
+- **Multi-Wallet Support**: Seamlessly switch between different Stacks wallets
+- **Network Flexibility**: Support for Devnet, Testnet, and Mainnet deployments
 
 ## 🚀 Deployment Guide
 
@@ -113,9 +138,16 @@ Each package can be distributed independently under its respective MIT license.
 Add these to your Vercel project settings:
 
 ```env
+# Network Configuration
+NEXT_PUBLIC_STACKS_NETWORK=testnet
+NEXT_PUBLIC_AUTH_ORIGIN=https://your-domain.vercel.app
+
+# Smart Contract Configuration (Testnet)
 NEXT_PUBLIC_GAME_SCORES_CONTRACT_ADDRESS=ST2ZPVCRZZ2T6V8DT7JCMXHRGHH7ZT7RYHPBJDWC0
 NEXT_PUBLIC_GAME_SCORES_CONTRACT_NAME=game-scores
-NEXT_PUBLIC_STACKS_NETWORK=testnet
+
+# Optional: Analytics and Monitoring
+NEXT_PUBLIC_VERCEL_ANALYTICS_ID=your-analytics-id
 ```
 
 ### Local Development

@@ -2,6 +2,7 @@
 
 import { ConnectWallet } from "@/components/wallet/ConnectWallet";
 import { PointsBadge } from "@/components/game/PointsBadge";
+import { AchievementProgress } from "@/components/game/AchievementBadge";
 import { usePointsStore } from "@/stores/usePointsStore";
 import Link from "next/link";
 
@@ -27,10 +28,17 @@ export default function Home() {
               <PointsBadge />
             </div>
           )}
+
+          {/* Achievement Progress */}
+          {totalEarned > 0 && (
+            <div className="max-w-md mx-auto mb-8">
+              <AchievementProgress showDetails={true} />
+            </div>
+          )}
         </div>
 
-        {/* Game Link */}
-        <div className="max-w-xl mx-auto mb-12 flex justify-center">
+        {/* Game Links */}
+        <div className="max-w-2xl mx-auto mb-12 grid grid-cols-1 md:grid-cols-2 gap-6">
           <Link
             href="/game"
             className="group block p-6 bg-white/5 backdrop-blur-sm rounded-lg border border-white/10 hover:bg-white/10 transition-colors"
@@ -40,6 +48,19 @@ export default function Home() {
               <h3 className="text-lg font-semibold mb-2">Play Memory Game</h3>
               <p className="text-sm text-muted-foreground">
                 Match cards to earn points. Complete faster for bonus points!
+              </p>
+            </div>
+          </Link>
+
+          <Link
+            href="/achievements"
+            className="group block p-6 bg-white/5 backdrop-blur-sm rounded-lg border border-white/10 hover:bg-white/10 transition-colors"
+          >
+            <div className="text-center">
+              <div className="text-4xl mb-3">🏆</div>
+              <h3 className="text-lg font-semibold mb-2">View Achievements</h3>
+              <p className="text-sm text-muted-foreground">
+                Track your progress and unlock achievements by playing games.
               </p>
             </div>
           </Link>
