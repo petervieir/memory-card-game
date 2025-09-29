@@ -2,10 +2,17 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Card } from './Card';
+import { DifficultySelector } from './DifficultySelector';
 import { usePointsStore } from '@/stores/usePointsStore';
+import { useDifficultyStore } from '@/stores/useDifficultyStore';
+import { useAudioStore } from '@/stores/useAudioStore';
+import { useSoundEffects, useBackgroundMusic } from '@/hooks/useSoundEffects';
 import { submitScore } from '@/lib/tx';
 import toast from 'react-hot-toast';
 import { useWallet } from '@/contexts/WalletContext';
+import { useCardSize } from '@/hooks/useCardSize';
+import { DIFFICULTIES, DIFFICULTY_ORDER, type DifficultyId, type GameCompletionData } from '@/types/game';
+import { AchievementNotification } from './AchievementBadge';
 
 
 // Image pool management
@@ -130,16 +137,39 @@ export function GameBoard() {
   const [flippedCards, setFlippedCards] = useState<number[]>([]);
   const [moves, setMoves] = useState(0);
   const [isGameComplete, setIsGameComplete] = useState(false);
-  const { addPoints, incrementGamesPlayed } = usePointsStore();
+  const [selectedDifficulty, setSelectedDifficulty] = useState<DifficultyId>('beginner');
+  const [showDifficultySelector, setShowDifficultySelector] = useState(true);
+  const [showAchievementNotification, setShowAchievementNotification] = useState<string | null>(null);
+  const { addPoints, incrementGamesPlayed, checkAndUnlockAchievements, setWalletAddress: setPointsWalletAddress } = usePointsStore();
   const { images, loading, selectImagesFromPool, imagePool } = useImages();
   const { address } = useWallet();
+  const { 
+    setWalletAddress, 
+    completeLevel, 
+    isUnlocked: isDifficultyUnlocked, 
+    getUnlockedDifficulties 
+  } = useDifficultyStore();
+  
+  // Audio hooks
+  const { soundEffectsEnabled, soundEffectsVolume, musicEnabled, musicVolume } = useAudioStore();
+  const { play_sound } = useSoundEffects({ 
+    enabled: soundEffectsEnabled, 
+    masterVolume: soundEffectsVolume 
+  });
+  const { fade_in, fade_out } = useBackgroundMusic({ 
+    enabled: musicEnabled, 
+    masterVolume: musicVolume 
+  });
+  
+  const currentDifficulty = DIFFICULTIES[selectedDifficulty];
+  const cardSize = useCardSize(currentDifficulty);
 
   const initializeGame = useCallback(() => {
     if (images.length === 0 || !address) return;
     hasAwardedRef.current = false;
     
-    // Get 8 images from pool management system
-    const selectedImages = selectImagesFromPool(8);
+    // Get images based on selected difficulty
+    const selectedImages = selectImagesFromPool(currentDifficulty.pairs);
     
     // Create pairs and shuffle
     const gameCards: GameCard[] = [];
@@ -160,16 +190,17 @@ export function GameBoard() {
     setFlippedCards([]);
     setMoves(0);
     setIsGameComplete(false);
-  }, [images, address, selectImagesFromPool]);
+    setShowDifficultySelector(false);
+  }, [images, address, selectImagesFromPool, currentDifficulty.pairs]);
 
   // Initialize game when images are loaded and wallet is connected
   useEffect(() => {
-    if (!loading && images.length > 0 && address) {
+    if (!loading && images.length > 0 && address && !showDifficultySelector) {
       initializeGame();
     }
     // We intentionally exclude initializeGame to avoid re-running when pool grows
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loading, images, address]);
+  }, [loading, images, address, showDifficultySelector]);
 
   // Check for matches when two cards are flipped
   useEffect(() => {
@@ -179,6 +210,15 @@ export function GameBoard() {
     const firstCard = cards.find(card => card.id === first);
     const secondCard = cards.find(card => card.id === second);
     const isMatch = firstCard?.imageSrc === secondCard?.imageSrc;
+
+    // Play match/mismatch sound
+    setTimeout(() => {
+      if (isMatch) {
+        play_sound('card_match');
+      } else {
+        play_sound('card_mismatch');
+      }
+    }, 400);
 
     const markAsMatched = (prev: GameCard[]) => prev.map(card => 
       card.id === first || card.id === second 
@@ -199,32 +239,78 @@ export function GameBoard() {
 
     setTimeout(updateCards, 1000);
     setMoves(prev => prev + 1);
-  }, [flippedCards, cards]);
+  }, [flippedCards, cards, play_sound]); // Added play_sound dependency
 
-  // Clear game when wallet disconnects
+  // Handle wallet connection/disconnection
   useEffect(() => {
+    setWalletAddress(address);
+    setPointsWalletAddress(address);
+    
     if (!address) {
       setCards([]);
       setFlippedCards([]);
       setMoves(0);
       setIsGameComplete(false);
+      setShowDifficultySelector(true);
     }
-  }, [address]);
+  }, [address, setWalletAddress, setPointsWalletAddress]);
 
   // Check if game is complete
   useEffect(() => {
     if (cards.length > 0 && cards.every(c => c.isMatched) && address && !hasAwardedRef.current) {
       hasAwardedRef.current = true;
-      const basePoints = 100;
-      const efficiency_bonus = Math.max(0, 20 - moves) * 5;
-      const score = basePoints + efficiency_bonus;
+      const basePoints = currentDifficulty.basePoints;
+      const efficiency_bonus = Math.max(0, currentDifficulty.maxMovesForBonus - moves) * 5;
+      const rawScore = basePoints + efficiency_bonus;
+      const finalScore = Math.round(rawScore * currentDifficulty.multiplier);
 
-      addPoints(score);
-      incrementGamesPlayed();
+      // Update stores first
+      addPoints(finalScore);
+      const newGamesPlayed = incrementGamesPlayed();
+      completeLevel(selectedDifficulty, finalScore, moves);
+
+      // Prepare achievement data AFTER updating stores
+      const gameData: GameCompletionData = {
+        moves,
+        maxMovesForBonus: currentDifficulty.maxMovesForBonus,
+        difficulty: selectedDifficulty,
+        score: finalScore,
+        gamesPlayed: newGamesPlayed, // Use the actual updated value
+        isPerfectGame: moves <= currentDifficulty.maxMovesForBonus
+      };
+
+      // Check for achievements AFTER updating stores
+      const newAchievements = checkAndUnlockAchievements(gameData);
       setIsGameComplete(true);
 
+      // Play game complete sound
+      play_sound('game_complete');
+
+      // Show achievement notification
+      if (newAchievements.length > 0) {
+        // Show notification for the first achievement (could be enhanced to show all)
+        setShowAchievementNotification(newAchievements[0]);
+        setTimeout(() => setShowAchievementNotification(null), 4000);
+        // Play achievement unlock sound
+        play_sound('achievement_unlock');
+      }
+
+      // Check if this completion unlocks the next level
+      const unlockedDifficulties = getUnlockedDifficulties();
+      const currentIndex = DIFFICULTY_ORDER.indexOf(selectedDifficulty as any);
+      const nextDifficulty = DIFFICULTY_ORDER[currentIndex + 1] as DifficultyId;
+      
+      if (nextDifficulty && unlockedDifficulties.includes(nextDifficulty)) {
+        toast.success(`🎉 ${DIFFICULTIES[nextDifficulty].name} difficulty unlocked!`, {
+          duration: 4000,
+          id: 'unlock-notification'
+        });
+        // Play level unlock sound
+        play_sound('level_unlock');
+      }
+
       // Submit score on-chain (best-effort)
-      submitScore(score)
+      submitScore(finalScore)
         .then(({ txId }) => {
           toast.success('Score submitted on-chain!', { id: 'submit-score' });
           console.log('submit-score txId:', txId);
@@ -234,15 +320,70 @@ export function GameBoard() {
           toast.error('Could not submit score on-chain');
         });
     }
-  }, [cards, moves, addPoints, incrementGamesPlayed, address]);
+  }, [cards, moves, addPoints, incrementGamesPlayed, address, currentDifficulty, selectedDifficulty, completeLevel, getUnlockedDifficulties, checkAndUnlockAchievements, play_sound]);
 
   const handleCardClick = (cardId: number) => {
     if (flippedCards.length >= 2 || !address) return;
+    
+    // Play card flip sound
+    play_sound('card_flip');
     
     setCards(prev => prev.map(card => 
       card.id === cardId ? { ...card, isFlipped: true } : card
     ));
     setFlippedCards(prev => [...prev, cardId]);
+  };
+
+  const handleDifficultyChange = (difficulty: DifficultyId) => {
+    if (isDifficultyUnlocked(difficulty)) {
+      setSelectedDifficulty(difficulty);
+      play_sound('difficulty_select');
+    }
+  };
+
+  const handleStartGame = useCallback(() => {
+    if (!address) return;
+    play_sound('button_click');
+    initializeGame();
+    // Fade in background music when game starts
+    if (musicEnabled) {
+      fade_in();
+    }
+  }, [address, play_sound, initializeGame, musicEnabled, fade_in]);
+
+  const handleNewGame = useCallback(() => {
+    play_sound('button_click');
+    setShowDifficultySelector(true);
+    setCards([]);
+    setFlippedCards([]);
+    setMoves(0);
+    setIsGameComplete(false);
+    // Fade out music when returning to difficulty selector
+    if (musicEnabled) {
+      fade_out();
+    }
+  }, [play_sound, musicEnabled, fade_out]);
+
+  const getGridClassName = () => {
+    const { gridCols } = currentDifficulty;
+    // Use explicit Tailwind classes to ensure they're included in the build
+    const gridColsClasses = {
+      4: 'grid-cols-4',
+      5: 'grid-cols-5',
+      6: 'grid-cols-6',
+      7: 'grid-cols-7',
+      8: 'grid-cols-8'
+    };
+    
+    // Adjust gap based on card size and grid density
+    let gap = 'gap-2';
+    if (cardSize.width > 96) {
+      gap = 'gap-4';
+    } else if (cardSize.width > 80) {
+      gap = 'gap-3';
+    }
+    
+    return `grid ${gap} mx-auto max-w-fit ${gridColsClasses[gridCols as keyof typeof gridColsClasses] || 'grid-cols-4'}`;
   };
 
   if (loading) {
@@ -268,44 +409,83 @@ export function GameBoard() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto">
-      {/* Game Stats */}
-      <div className="flex justify-between items-center mb-6 p-4 bg-white/10 backdrop-blur-sm rounded-lg">
-        <div className="flex flex-col">
-          <span className="text-sm">Moves: {moves}</span>
-          <span className="text-xs text-gray-400">Pool: {imagePool.length}/{IMAGE_POOL_SIZE}</span>
-        </div>
-        <button
-          onClick={initializeGame}
-          className="px-3 py-1 text-sm bg-blue-500 hover:bg-blue-600 rounded transition-colors"
-        >
-          New Game
-        </button>
-      </div>
+    <div className="w-full mx-auto px-4">
+      {/* Achievement Notification */}
+      {showAchievementNotification && (
+        <AchievementNotification
+          achievementId={showAchievementNotification}
+          onClose={() => setShowAchievementNotification(null)}
+        />
+      )}
 
-      {/* Game Complete Message */}
-      {isGameComplete && (
-        <div className="mb-6 p-4 bg-green-500/20 border border-green-500 rounded-lg text-center">
-          <h3 className="font-bold text-green-400 mb-2">🎉 Congratulations!</h3>
-          <p className="text-sm">
-            Game completed in {moves} moves!<br/>
-            Points earned: {100 + Math.max(0, 20 - moves) * 5}
-          </p>
+      {/* Difficulty Selector */}
+      {showDifficultySelector && (
+        <div className="mb-8">
+          <DifficultySelector
+            selectedDifficulty={selectedDifficulty}
+            onDifficultyChange={handleDifficultyChange}
+          />
+          <div className="text-center mt-6">
+            <button
+              onClick={handleStartGame}
+              className="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-lg transition-colors"
+            >
+              Start Game
+            </button>
+          </div>
         </div>
       )}
 
-      {/* Game Board */}
-      <div className="grid grid-cols-4 gap-4 max-w-lg mx-auto">
-        {cards.map((card) => (
-          <Card
-            key={card.id}
-            imageSrc={card.imageSrc}
-            isFlipped={card.isFlipped}
-            isMatched={card.isMatched}
-            onClick={() => handleCardClick(card.id)}
-          />
-        ))}
-      </div>
+      {/* Game Content */}
+      {!showDifficultySelector && (
+        <>
+          {/* Game Stats */}
+          <div className="flex justify-between items-center mb-6 p-4 bg-white/10 backdrop-blur-sm rounded-lg">
+            <div className="flex flex-col">
+              <span className="text-sm font-medium">
+                {currentDifficulty.emoji} {currentDifficulty.name} - {moves} moves
+              </span>
+              <span className="text-xs text-gray-400">
+                {currentDifficulty.pairs} pairs • Pool: {imagePool.length}/{IMAGE_POOL_SIZE}
+              </span>
+            </div>
+            <button
+              onClick={handleNewGame}
+              className="px-3 py-1 text-sm bg-blue-500 hover:bg-blue-600 rounded transition-colors"
+            >
+              New Game
+            </button>
+          </div>
+
+          {/* Game Complete Message */}
+          {isGameComplete && (
+            <div className="mb-6 p-4 bg-green-500/20 border border-green-500 rounded-lg text-center">
+              <h3 className="font-bold text-green-400 mb-2">🎉 Congratulations!</h3>
+              <p className="text-sm">
+                Game completed in {moves} moves!<br/>
+                Points earned: {Math.round((currentDifficulty.basePoints + Math.max(0, currentDifficulty.maxMovesForBonus - moves) * 5) * currentDifficulty.multiplier)}
+              </p>
+              <p className="text-xs text-gray-400 mt-2">
+                Difficulty: {currentDifficulty.name} ({currentDifficulty.multiplier}x multiplier)
+              </p>
+            </div>
+          )}
+
+          {/* Game Board */}
+          <div className={getGridClassName()}>
+            {cards.map((card) => (
+              <Card
+                key={card.id}
+                imageSrc={card.imageSrc}
+                isFlipped={card.isFlipped}
+                isMatched={card.isMatched}
+                onClick={() => handleCardClick(card.id)}
+                sizeClass={cardSize.className}
+              />
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 }
