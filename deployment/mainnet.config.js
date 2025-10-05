@@ -43,6 +43,14 @@ module.exports = {
     auditRequired: true,
   },
 
+  // GitHub integration
+  github: {
+    token: process.env.GITHUB_TOKEN,
+    repository: process.env.GITHUB_REPOSITORY || "your-username/MemoryCardGame",
+    createRelease: true,
+    releaseTag: "v${version}",
+  },
+
   // Deployment validation
   validation: {
     checkBalance: true,
@@ -52,6 +60,7 @@ module.exports = {
       "MAINNET_DEPLOYER_PRIVATE_KEY",
       "MAINNET_FRONTEND_URL",
       "HIRO_API_KEY",
+      "GITHUB_TOKEN",
     ],
     contractAudit: true,
     securityChecks: true,

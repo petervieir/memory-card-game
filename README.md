@@ -150,6 +150,29 @@ NEXT_PUBLIC_GAME_SCORES_CONTRACT_NAME=game-scores
 NEXT_PUBLIC_VERCEL_ANALYTICS_ID=your-analytics-id
 ```
 
+### GitHub Secrets (CI/CD)
+
+For automated deployment and releases, configure these GitHub secrets:
+
+```env
+# GitHub Integration
+GITHUB_TOKEN=your_github_personal_access_token
+
+# Vercel Deployment
+VERCEL_TOKEN=your_vercel_token
+VERCEL_ORG_ID=your_vercel_org_id
+VERCEL_PROJECT_ID=your_vercel_project_id
+
+# Stacks Deployment
+TESTNET_DEPLOYER_ADDRESS=your_testnet_address
+TESTNET_DEPLOYER_PRIVATE_KEY=your_testnet_private_key
+MAINNET_DEPLOYER_ADDRESS=your_mainnet_address
+MAINNET_DEPLOYER_PRIVATE_KEY=your_mainnet_private_key
+HIRO_API_KEY=your_hiro_api_key
+```
+
+📖 **Detailed Setup**: See [GITHUB_SECRETS.md](./GITHUB_SECRETS.md) for complete configuration instructions.
+
 ### Local Development
 
 ```bash
