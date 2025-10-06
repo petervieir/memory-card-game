@@ -6,14 +6,19 @@ A fully functional memory card game frontend deployed on Vercel with on-chain sc
 
 ## Features
 
-- **🎮 Complete Game**: Memory card matching with emoji cards
-- **⛓️ On-Chain Scores**: Best scores stored on Stacks blockchain
-- **📊 Performance Monitoring**: Vercel Speed Insights and Analytics
-- **🚀 Next.js 13+** with App Router and TypeScript
-- **🎨 Modern UI**: Radix UI + TailwindCSS with beautiful design
-- **🔗 Wallet Integration**: Hiro/Leather wallet support
-- **📱 Responsive**: Works perfectly on desktop and mobile
-- **🌐 Multi-Network**: Devnet, Testnet, and Mainnet support
+- **🎮 Complete Game**: Memory card matching with 6 progressive difficulty levels and achievement system
+- **🎯 Advanced Difficulty System**: Beginner (12 cards) to Master (32 cards) with progressive unlocking - [See Difficulty System](../DIFFICULTY_SYSTEM.md)
+- **🏆 Achievement System**: 13 achievements across 4 categories with real-time unlocking - [See Achievement System](../ACHIEVEMENT_SYSTEM.md)
+- **📱 Dynamic Responsive Design**: Cards automatically resize based on screen size and grid density - [See Dynamic Sizing](../DYNAMIC_SIZING.md)
+- **⛓️ Blockchain Integration**: Submit scores to Stacks smart contracts with per-wallet tracking
+- **📊 Performance Monitoring**: Vercel Speed Insights and Analytics for optimization
+- **🚀 Modern Tech Stack**: Next.js 13+ with App Router, TypeScript, and React 18
+- **🎨 Beautiful UI**: Radix UI + TailwindCSS with smooth animations and visual feedback
+- **🔗 Wallet Integration**: Full Hiro/Leather wallet support with balance display
+- **📱 Mobile-First Design**: Optimized experience across all devices and screen sizes
+- **🌐 Multi-Network Support**: Seamless switching between Devnet, Testnet, and Mainnet
+
+📚 **[View All Features](../FEATURES.md)** | 📝 **[Changelog](../CHANGELOG.md)**
 
 ## Getting Started
 
@@ -80,11 +85,40 @@ NEXT_PUBLIC_GAME_SCORES_CONTRACT_NAME=game-scores
 
 ## Game Features
 
-- **🎯 Memory Challenge**: Match pairs of emoji cards
-- **📊 Smart Scoring**: Base points (100) + efficiency bonus for fewer moves
-- **🏆 On-Chain Leaderboard**: Best scores permanently stored on Stacks
-- **💰 Wallet Required**: Connect wallet to play and earn points
-- **🎨 Beautiful UI**: Modern, accessible design with animations
+### 🎯 Core Gameplay
+- **Memory Challenge**: Match pairs of high-quality image cards across 6 progressive difficulty levels
+- **Progressive Unlocking**: Complete each difficulty to unlock the next challenge level
+- **Dynamic Grids**: From 4×3 (Beginner) to 8×4 (Master) responsive grid layouts
+- **Smart Image Pool**: 56+ unique images with intelligent rotation and selection
+
+### 📊 Advanced Scoring System
+- **Dynamic Base Points**: 120-400 points based on difficulty level
+- **Efficiency Bonuses**: Earn up to 5 points per move saved under the bonus threshold
+- **Difficulty Multipliers**: 1.0× to 2.5× multipliers for progressive reward scaling
+- **Achievement Integration**: Unlock achievements for perfect games, speed completion, and milestones
+
+### 🏆 Achievement System
+- **13 Total Achievements**: Comprehensive progression tracking across 4 categories
+- **Move Efficiency**: Perfect Game, Speed Master, Efficiency Expert
+- **Difficulty Mastery**: Unique badges for completing each difficulty level
+- **Milestone Tracking**: First Victory, Veteran Player, Century Club achievements
+- **Special Rewards**: High Scorer achievement for exceptional performance
+- **Real-time Notifications**: Instant feedback when achievements are unlocked
+- **Progress Visualization**: Category breakdown and overall completion percentage
+
+### 🔗 Blockchain & Wallet Integration
+- **On-Chain Leaderboards**: Submit high scores to Stacks testnet smart contracts
+- **Per-Wallet Tracking**: All progress, achievements, and scores tied to wallet address
+- **Multi-Wallet Support**: Seamlessly switch between different connected wallets
+- **Persistent Progress**: Achievement and difficulty progress saved per wallet
+
+### 📱 Responsive Design
+- **Adaptive Card Sizing**: Cards automatically resize based on screen dimensions and grid density
+- **Mobile Optimization**: Touch-friendly interface with optimized spacing
+- **Cross-Device Consistency**: Seamless experience from mobile to desktop
+- **Dynamic Grid Gaps**: Intelligent spacing adjustment based on card size
+
+> **Latest in v3.0**: [Comprehensive Achievement System](../ACHIEVEMENT_SYSTEM.md) with 13 achievements, [Progressive Unlock System](../DIFFICULTY_SYSTEM.md) with Master difficulty, and [Dynamic Card Sizing](../DYNAMIC_SIZING.md) for optimal display
 
 ## Performance Monitoring
 

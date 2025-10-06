@@ -1,0 +1,175 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+env:
+  NODE_VERSION: '18'
+  NPM_VERSION: '10'
+
+jobs:
+  # Code Quality and Testing
+  test:
+    name: Test & Lint
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Run linting
+      run: npm run lint
+      
+    - name: Run type checking
+      run: npm run type-check
+      
+    - name: Run tests
+      run: npm run test
+      
+    - name: Run contract tests
+      run: npm run test:contracts
+      working-directory: ./clarity
+
+  # Build and validate
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: test
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Build contracts
+      run: npm run build:contracts
+      
+    - name: Build frontend
+      run: npm run build:frontend
+      
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-artifacts
+        path: |
+          front-end/.next/
+          clarity/.clarinet/
+
+  # Deploy to testnet
+  deploy-testnet:
+    name: Deploy to Testnet
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
+    environment: testnet
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Deploy contracts to testnet
+      run: npm run deploy:testnet
+      env:
+        TESTNET_DEPLOYER_ADDRESS: ${{ secrets.TESTNET_DEPLOYER_ADDRESS }}
+        TESTNET_DEPLOYER_PRIVATE_KEY: ${{ secrets.TESTNET_DEPLOYER_PRIVATE_KEY }}
+        TESTNET_FRONTEND_URL: ${{ secrets.TESTNET_FRONTEND_URL }}
+        
+    - name: Deploy frontend to Vercel
+      uses: amondnet/vercel-action@v25
+      with:
+        vercel-token: ${{ secrets.VERCEL_TOKEN }}
+        vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+        vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+        working-directory: ./front-end
+        vercel-args: '--prod'
+
+  # Deploy to mainnet (manual trigger)
+  deploy-mainnet:
+    name: Deploy to Mainnet
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
+    
+    environment: mainnet
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Deploy contracts to mainnet
+      run: npm run deploy:mainnet
+      env:
+        MAINNET_DEPLOYER_ADDRESS: ${{ secrets.MAINNET_DEPLOYER_ADDRESS }}
+        MAINNET_DEPLOYER_PRIVATE_KEY: ${{ secrets.MAINNET_DEPLOYER_PRIVATE_KEY }}
+        MAINNET_FRONTEND_URL: ${{ secrets.MAINNET_FRONTEND_URL }}
+        HIRO_API_KEY: ${{ secrets.HIRO_API_KEY }}
+        
+    - name: Deploy frontend to Vercel
+      uses: amondnet/vercel-action@v25
+      with:
+        vercel-token: ${{ secrets.VERCEL_TOKEN }}
+        vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+        vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+        working-directory: ./front-end
+        vercel-args: '--prod'
+
+  # Security scanning
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'fs'
+        scan-ref: '.'
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+        
+    - name: Upload Trivy scan results to GitHub Security tab
+      uses: github/codeql-action/upload-sarif@v3
+      if: always()
+      with:
+        sarif_file: 'trivy-results.sarif'

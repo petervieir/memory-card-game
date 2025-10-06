@@ -35,6 +35,13 @@ module.exports = {
     },
   },
 
+  // GitHub integration
+  github: {
+    token: process.env.GITHUB_TOKEN,
+    repository: process.env.GITHUB_REPOSITORY || "your-username/MemoryCardGame",
+    createRelease: false, // Only create releases for mainnet
+  },
+
   // Deployment validation
   validation: {
     checkBalance: true,
@@ -43,6 +50,7 @@ module.exports = {
       "TESTNET_DEPLOYER_ADDRESS",
       "TESTNET_DEPLOYER_PRIVATE_KEY",
       "TESTNET_FRONTEND_URL",
+      "GITHUB_TOKEN",
     ],
   },
 };

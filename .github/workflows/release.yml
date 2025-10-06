@@ -1,0 +1,123 @@
+name: Create Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g., v1.0.0)'
+        required: true
+        type: string
+
+jobs:
+  create-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Build project
+      run: npm run build
+      
+    - name: Extract version
+      id: version
+      run: |
+        if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+        else
+          echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+        fi
+        
+    - name: Generate changelog
+      id: changelog
+      run: |
+        # Get commits since last tag
+        if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD~1 2>/dev/null || echo "")
+        else
+          PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD~1 2>/dev/null || echo "")
+        fi
+        
+        if [ -n "$PREVIOUS_TAG" ]; then
+          CHANGELOG=$(git log --pretty=format:"- %s (%h)" $PREVIOUS_TAG..HEAD)
+        else
+          CHANGELOG=$(git log --pretty=format:"- %s (%h)" --max-count=20)
+        fi
+        
+        echo "changelog<<EOF" >> $GITHUB_OUTPUT
+        echo "$CHANGELOG" >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
+        
+    - name: Create Release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ steps.version.outputs.version }}
+        release_name: Release ${{ steps.version.outputs.version }}
+        body: |
+          ## 🎉 What's New
+          
+          ${{ steps.changelog.outputs.changelog }}
+          
+          ## 📦 Installation
+          
+          ```bash
+          git clone https://github.com/${{ github.repository }}.git
+          cd MemoryCardGame
+          npm install
+          npm run dev
+          ```
+          
+          ## 🚀 Deployment
+          
+          ### Testnet
+          ```bash
+          npm run deploy:testnet
+          ```
+          
+          ### Mainnet
+          ```bash
+          npm run deploy:mainnet
+          ```
+          
+          ## 📋 Full Changelog
+          
+          View the [full changelog](https://github.com/${{ github.repository }}/compare/${{ steps.version.outputs.version }}...main) for all changes.
+        draft: false
+        prerelease: false
+        
+    - name: Upload build artifacts
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./front-end/.next
+        asset_name: frontend-build-${{ steps.version.outputs.version }}.zip
+        asset_content_type: application/zip
+        
+    - name: Upload contract artifacts
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./clarity/.clarinet
+        asset_name: contracts-${{ steps.version.outputs.version }}.zip
+        asset_content_type: application/zip

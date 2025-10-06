@@ -1,10 +1,13 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { ACHIEVEMENTS, type GameCompletionData } from '@/types/game';
+import { createJSONStorage } from '@/lib/storage';
 
 interface WalletStats {
   points: number;
   totalEarned: number;
   gamesPlayed: number;
+  unlockedAchievements: string[];
 }
 
 interface PointsState {
@@ -13,11 +16,16 @@ interface PointsState {
   gamesPlayed: number;
   walletAddress: string | null;
   walletStats: Record<string, WalletStats>;
+  unlockedAchievements: string[];
+  newlyUnlockedAchievements: string[];
   addPoints: (amount: number) => void;
   spendPoints: (amount: number) => boolean;
   resetPoints: () => void;
-  incrementGamesPlayed: () => void;
+  incrementGamesPlayed: () => number;
   setWalletAddress: (address: string | null) => void;
+  checkAndUnlockAchievements: (gameData: GameCompletionData) => string[];
+  clearNewlyUnlockedAchievements: () => void;
+  getAchievementProgress: () => { total: number; unlocked: number; categories: Record<string, number> };
 }
 
 export const usePointsStore = create<PointsState>()(
@@ -28,6 +36,8 @@ export const usePointsStore = create<PointsState>()(
       gamesPlayed: 0,
       walletAddress: null,
       walletStats: {},
+      unlockedAchievements: [],
+      newlyUnlockedAchievements: [],
       
       addPoints: (amount: number) => {
         const { walletAddress } = get();
@@ -47,6 +57,7 @@ export const usePointsStore = create<PointsState>()(
                 points: newPoints,
                 totalEarned: newTotalEarned,
                 gamesPlayed: state.gamesPlayed,
+                unlockedAchievements: state.unlockedAchievements,
               }
             }
           };
@@ -87,6 +98,7 @@ export const usePointsStore = create<PointsState>()(
                 points: 0,
                 totalEarned: 0,
                 gamesPlayed: 0,
+                unlockedAchievements: [],
               }
             }
           }));
@@ -96,10 +108,11 @@ export const usePointsStore = create<PointsState>()(
       incrementGamesPlayed: () => {
         const { walletAddress } = get();
         
-        if (!walletAddress) return;
+        if (!walletAddress) return 0;
         
+        let newGamesPlayed = 0;
         set((state) => {
-          const newGamesPlayed = state.gamesPlayed + 1;
+          newGamesPlayed = state.gamesPlayed + 1;
           
           return {
             gamesPlayed: newGamesPlayed,
@@ -112,6 +125,7 @@ export const usePointsStore = create<PointsState>()(
             }
           };
         });
+        return newGamesPlayed;
       },
       
       setWalletAddress: (address: string | null) => {
@@ -123,7 +137,9 @@ export const usePointsStore = create<PointsState>()(
             walletAddress: null,
             points: 0,
             totalEarned: 0,
-            gamesPlayed: 0
+            gamesPlayed: 0,
+            unlockedAchievements: [],
+            newlyUnlockedAchievements: []
           });
           return;
         }
@@ -138,6 +154,7 @@ export const usePointsStore = create<PointsState>()(
           points: 0,
           totalEarned: 0,
           gamesPlayed: 0,
+          unlockedAchievements: [],
         };
         
         set({ 
@@ -145,11 +162,77 @@ export const usePointsStore = create<PointsState>()(
           points: stats.points,
           totalEarned: stats.totalEarned,
           gamesPlayed: stats.gamesPlayed,
+          unlockedAchievements: stats.unlockedAchievements,
+          newlyUnlockedAchievements: []
         });
+      },
+
+      checkAndUnlockAchievements: (gameData: GameCompletionData) => {
+        const { walletAddress, unlockedAchievements } = get();
+        if (!walletAddress) return [];
+
+        const currentUnlocked = unlockedAchievements || [];
+        const newlyUnlocked: string[] = [];
+        
+        // Check each achievement
+        Object.values(ACHIEVEMENTS).forEach((achievement) => {
+          const isAlreadyUnlocked = currentUnlocked.includes(achievement.id);
+          const conditionMet = achievement.condition(gameData);
+          
+          if (!isAlreadyUnlocked && conditionMet) {
+            newlyUnlocked.push(achievement.id);
+          }
+        });
+
+        if (newlyUnlocked.length > 0) {
+          set((state) => {
+            const updatedUnlocked = [...(state.unlockedAchievements || []), ...newlyUnlocked];
+            return {
+              unlockedAchievements: updatedUnlocked,
+              newlyUnlockedAchievements: newlyUnlocked,
+              walletStats: {
+                ...state.walletStats,
+                [walletAddress]: {
+                  ...(state.walletStats[walletAddress] || { points: state.points, totalEarned: state.totalEarned, gamesPlayed: state.gamesPlayed, unlockedAchievements: [] }),
+                  unlockedAchievements: updatedUnlocked,
+                }
+              }
+            };
+          });
+        }
+
+        return newlyUnlocked;
+      },
+
+      clearNewlyUnlockedAchievements: () => {
+        set({ newlyUnlockedAchievements: [] });
+      },
+
+      getAchievementProgress: () => {
+        const { unlockedAchievements } = get();
+        const totalAchievements = Object.keys(ACHIEVEMENTS).length;
+        const categories = { moves: 0, difficulty: 0, milestone: 0, special: 0 };
+        
+        // Handle case where unlockedAchievements is undefined (during hydration)
+        const achievements = unlockedAchievements || [];
+        
+        achievements.forEach((id) => {
+          const achievement = Object.values(ACHIEVEMENTS).find(a => a.id === id);
+          if (achievement) {
+            categories[achievement.category]++;
+          }
+        });
+
+        return {
+          total: totalAchievements,
+          unlocked: achievements.length,
+          categories
+        };
       },
     }),
     {
       name: 'memory-game-points',
+      storage: createJSONStorage(),
     }
   )
 );

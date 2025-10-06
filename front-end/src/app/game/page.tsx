@@ -38,10 +38,11 @@ export default function GamePage() {
         <div className="max-w-lg mx-auto mb-8 p-4 bg-white/5 backdrop-blur-sm rounded-lg border border-white/10">
           <h2 className="text-lg font-semibold mb-2 text-center">How to Play</h2>
           <ul className="text-sm text-muted-foreground space-y-1">
+            <li>• Choose your difficulty level</li>
             <li>• Click cards to flip them over</li>
-            <li>• Match pairs of identical emojis</li>
+            <li>• Match pairs of identical images</li>
             <li>• Complete in fewer moves for bonus points</li>
-            <li>• Base: 100 points + efficiency bonus</li>
+            <li>• Higher difficulties give more points with multipliers</li>
           </ul>
         </div>
 
