@@ -11,7 +11,11 @@ A fully functional decentralized memory card game built on Stacks with Next.js, 
 - **🎮 Fully Functional Game** - Memory card matching with 6 difficulty levels and progressive unlocking
 - **🎯 Advanced Difficulty System** - Beginner (12 cards) to Master (32 cards) with dynamic scoring multipliers
 - **🏆 Comprehensive Achievement System** - 13 achievements across 4 categories (Efficiency, Mastery, Milestones, Special)
+
+sound-effects
 - **🔊 Immersive Sound System** - Dynamic sound effects and optional background music with volume controls
+
+main
 - **📱 Dynamic Responsive Design** - Cards auto-resize based on screen size and grid density for optimal experience
 - **⛓️ On-Chain Score Tracking** - Submit high scores to Stacks testnet with wallet-specific leaderboards
 - **🚀 Modern Tech Stack** - Next.js 13+ with App Router, TypeScript, and React 18
@@ -158,6 +162,8 @@ NEXT_PUBLIC_GAME_SCORES_CONTRACT_NAME=game-scores
 # Optional: Analytics and Monitoring
 NEXT_PUBLIC_VERCEL_ANALYTICS_ID=your-analytics-id
 ```
+
+📖 **Detailed Setup**: See [GITHUB_SECRETS.md](./GITHUB_SECRETS.md) for complete configuration instructions.
 
 ### Local Development
 

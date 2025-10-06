@@ -48,6 +48,7 @@ deployment/
 TESTNET_DEPLOYER_ADDRESS=your_testnet_address
 TESTNET_DEPLOYER_PRIVATE_KEY=your_testnet_private_key
 TESTNET_FRONTEND_URL=https://your-testnet-app.com
+GITHUB_TOKEN=your_github_personal_access_token
 ```
 
 ### Mainnet
@@ -57,7 +58,23 @@ MAINNET_DEPLOYER_ADDRESS=your_mainnet_address
 MAINNET_DEPLOYER_PRIVATE_KEY=your_mainnet_private_key
 MAINNET_FRONTEND_URL=https://your-production-app.com
 HIRO_API_KEY=your_hiro_api_key
+GITHUB_TOKEN=your_github_personal_access_token
 ```
+
+### GitHub Integration
+
+The GitHub token is required for:
+- Creating releases and tags
+- Updating deployment status
+- Accessing repository information
+- CI/CD automation
+
+**Required Scopes**:
+- `repo` - Full control of private repositories
+- `workflow` - Update GitHub Action workflows
+- `write:packages` - Upload packages to GitHub Package Registry
+
+See [GITHUB_SECRETS.md](../GITHUB_SECRETS.md) for detailed setup instructions.
 
 ## 📋 Pre-deployment Checklist
 

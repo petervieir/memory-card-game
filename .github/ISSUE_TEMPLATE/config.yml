@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 Discussion
+    url: https://github.com/your-username/MemoryCardGame/discussions
+    about: Ask questions and discuss ideas with the community
+  - name: 🎮 Live Demo
+    url: https://memory-card-game-git-main-peters-projects-f3199619.vercel.app
+    about: Try the live demo of the Memory Card Game
+  - name: 📚 Documentation
+    url: https://github.com/your-username/MemoryCardGame/blob/main/FEATURES.md
+    about: Browse the complete features documentation
