@@ -1,0 +1,40 @@
+---
+id: 0
+name: Mainnet deployment
+network: mainnet
+stacks-node: "https://api.hiro.so"
+bitcoin-node: "https://blockstream.info/api"
+plan:
+  batches:
+    - id: 0
+      transactions:
+        - contract-publish:
+            contract-name: game-scores
+            expected-sender: REPLACE_WITH_MAINNET_ADDRESS
+            cost: 4640
+            path: contracts/core/game-scores.clar
+            anchor-block-only: true
+            clarity-version: 1
+        - contract-publish:
+            contract-name: helpers
+            expected-sender: REPLACE_WITH_MAINNET_ADDRESS
+            cost: 8360
+            path: contracts/utils/helpers.clar
+            anchor-block-only: true
+            clarity-version: 1
+        - contract-publish:
+            contract-name: main-contract
+            expected-sender: REPLACE_WITH_MAINNET_ADDRESS
+            cost: 12720
+            path: contracts/core/main-contract.clar
+            anchor-block-only: true
+            clarity-version: 1
+        - contract-publish:
+            contract-name: sip-009-trait
+            expected-sender: REPLACE_WITH_MAINNET_ADDRESS
+            cost: 5180
+            path: contracts/traits/sip-009-trait.clar
+            anchor-block-only: true
+            clarity-version: 1
+      epoch: "2.05"
+

@@ -27,6 +27,7 @@
     "// Deployment": "",
     "deploy:devnet": "cd clarity && npm run deploy:devnet",
     "deploy:testnet": "cd clarity && npm run deploy:testnet",
+    "deploy:mainnet": "cd clarity && npm run deploy:mainnet",
     "// Utilities": "",
     "clean": "turbo run clean",
     "clean:all": "npm run clean && rm -rf node_modules && rm -rf front-end/node_modules && rm -rf clarity/node_modules",

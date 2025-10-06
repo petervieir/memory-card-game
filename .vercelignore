@@ -1,0 +1,29 @@
+# Ignore clarity contracts and tests
+clarity/
+.clarinet/
+
+# Ignore scripts
+scripts/
+
+# Ignore GitHub workflows
+.github/
+
+# Ignore deployment configs
+deployment/
+
+# Ignore documentation
+docs/
+*.md
+!README.md
+
+# Ignore test files
+**/__tests__/
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+
+# Ignore config files
+.eslintrc*
+.prettierrc*
+jest.config.js
+vitest.config.js

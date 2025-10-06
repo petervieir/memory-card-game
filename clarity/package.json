@@ -28,6 +28,7 @@
     "// Deployment": "",
     "deploy:devnet": "clarinet deployments apply -p deployments/default.devnet-plan.yaml",
     "deploy:testnet": "clarinet deployments apply -p deployments/default.testnet-plan.yaml",
+    "deploy:mainnet": "clarinet deployments apply -p deployments/default.mainnet-plan.yaml",
     "deploy:simnet": "clarinet deployments apply -p deployments/default.simnet-plan.yaml",
     "// Utilities": "",
     "build": "npm run check",

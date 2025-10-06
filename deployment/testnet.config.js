@@ -38,7 +38,7 @@ module.exports = {
   // GitHub integration
   github: {
     token: process.env.GITHUB_TOKEN,
-    repository: process.env.GITHUB_REPOSITORY || "your-username/MemoryCardGame",
+    repository: process.env.GITHUB_REPOSITORY || "petervieir/memory-card-game",
     createRelease: false, // Only create releases for mainnet
   },
 
