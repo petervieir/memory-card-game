@@ -11,6 +11,11 @@ A fully functional decentralized memory card game built on Stacks with Next.js, 
 - **🎮 Fully Functional Game** - Memory card matching with 6 difficulty levels and progressive unlocking
 - **🎯 Advanced Difficulty System** - Beginner (12 cards) to Master (32 cards) with dynamic scoring multipliers
 - **🏆 Comprehensive Achievement System** - 13 achievements across 4 categories (Efficiency, Mastery, Milestones, Special)
+
+sound-effects
+- **🔊 Immersive Sound System** - Dynamic sound effects and optional background music with volume controls
+
+main
 - **📱 Dynamic Responsive Design** - Cards auto-resize based on screen size and grid density for optimal experience
 - **⛓️ On-Chain Score Tracking** - Submit high scores to Stacks testnet with wallet-specific leaderboards
 - **🚀 Modern Tech Stack** - Next.js 13+ with App Router, TypeScript, and React 18
@@ -88,6 +93,7 @@ npm run dev
 | [🚀 Getting Started](./docs/GETTING_STARTED.md) | Setup and first steps         |
 | [🔨 Development Guide](./docs/DEVELOPMENT.md)   | Coding patterns and workflows |
 | [🚀 Deployment Guide](./deployment/README.md)   | Environment deployments       |
+| [🔊 Sound System](./SOUND_SYSTEM.md)            | Audio implementation guide    |
 | [📋 Recommendations](./docs/RECOMMENDATIONS.md) | Optimization suggestions      |
 | [🤝 Contributing Guide](./CONTRIBUTING.md)      | How to contribute to the project |
 
@@ -125,6 +131,13 @@ Each package can be distributed independently under its respective MIT license.
 - **Milestones**: First Victory, Veteran Player (10 games), Century Club (100 games)
 - **Special Rewards**: High Scorer achievement for exceptional performance
 
+### 🔊 Sound System
+- **Dynamic Sound Effects**: Audio feedback for card flips, matches, achievements, and more
+- **Background Music**: Optional looping music with smooth fade in/out
+- **Volume Controls**: Independent sliders for effects and music
+- **Persistent Settings**: Audio preferences saved per browser
+- **No Required Files**: Game works perfectly without sound files (graceful degradation)
+
 ### 🔗 Blockchain Integration
 - **On-Chain Leaderboards**: Submit high scores to Stacks testnet smart contracts
 - **Wallet-Specific Progress**: All achievements and scores tied to your wallet address
@@ -148,27 +161,6 @@ NEXT_PUBLIC_GAME_SCORES_CONTRACT_NAME=game-scores
 
 # Optional: Analytics and Monitoring
 NEXT_PUBLIC_VERCEL_ANALYTICS_ID=your-analytics-id
-```
-
-### GitHub Secrets (CI/CD)
-
-For automated deployment and releases, configure these GitHub secrets:
-
-```env
-# GitHub Integration
-GITHUB_TOKEN=your_github_personal_access_token
-
-# Vercel Deployment
-VERCEL_TOKEN=your_vercel_token
-VERCEL_ORG_ID=your_vercel_org_id
-VERCEL_PROJECT_ID=your_vercel_project_id
-
-# Stacks Deployment
-TESTNET_DEPLOYER_ADDRESS=your_testnet_address
-TESTNET_DEPLOYER_PRIVATE_KEY=your_testnet_private_key
-MAINNET_DEPLOYER_ADDRESS=your_mainnet_address
-MAINNET_DEPLOYER_PRIVATE_KEY=your_mainnet_private_key
-HIRO_API_KEY=your_hiro_api_key
 ```
 
 📖 **Detailed Setup**: See [GITHUB_SECRETS.md](./GITHUB_SECRETS.md) for complete configuration instructions.

@@ -5,6 +5,8 @@ import { Card } from './Card';
 import { DifficultySelector } from './DifficultySelector';
 import { usePointsStore } from '@/stores/usePointsStore';
 import { useDifficultyStore } from '@/stores/useDifficultyStore';
+import { useAudioStore } from '@/stores/useAudioStore';
+import { useSoundEffects, useBackgroundMusic } from '@/hooks/useSoundEffects';
 import { submitScore } from '@/lib/tx';
 import toast from 'react-hot-toast';
 import { useWallet } from '@/contexts/WalletContext';
@@ -148,6 +150,17 @@ export function GameBoard() {
     getUnlockedDifficulties 
   } = useDifficultyStore();
   
+  // Audio hooks
+  const { soundEffectsEnabled, soundEffectsVolume, musicEnabled, musicVolume } = useAudioStore();
+  const { play_sound } = useSoundEffects({ 
+    enabled: soundEffectsEnabled, 
+    masterVolume: soundEffectsVolume 
+  });
+  const { fade_in, fade_out } = useBackgroundMusic({ 
+    enabled: musicEnabled, 
+    masterVolume: musicVolume 
+  });
+  
   const currentDifficulty = DIFFICULTIES[selectedDifficulty];
   const cardSize = useCardSize(currentDifficulty);
 
@@ -198,6 +211,15 @@ export function GameBoard() {
     const secondCard = cards.find(card => card.id === second);
     const isMatch = firstCard?.imageSrc === secondCard?.imageSrc;
 
+    // Play match/mismatch sound
+    setTimeout(() => {
+      if (isMatch) {
+        play_sound('card_match');
+      } else {
+        play_sound('card_mismatch');
+      }
+    }, 400);
+
     const markAsMatched = (prev: GameCard[]) => prev.map(card => 
       card.id === first || card.id === second 
         ? { ...card, isMatched: true, isFlipped: false }
@@ -217,7 +239,7 @@ export function GameBoard() {
 
     setTimeout(updateCards, 1000);
     setMoves(prev => prev + 1);
-  }, [flippedCards]); // Removed 'cards' from dependency array to prevent double counting
+  }, [flippedCards, cards, play_sound]); // Added play_sound dependency
 
   // Handle wallet connection/disconnection
   useEffect(() => {
@@ -261,11 +283,16 @@ export function GameBoard() {
       const newAchievements = checkAndUnlockAchievements(gameData);
       setIsGameComplete(true);
 
+      // Play game complete sound
+      play_sound('game_complete');
+
       // Show achievement notification
       if (newAchievements.length > 0) {
         // Show notification for the first achievement (could be enhanced to show all)
         setShowAchievementNotification(newAchievements[0]);
         setTimeout(() => setShowAchievementNotification(null), 4000);
+        // Play achievement unlock sound
+        play_sound('achievement_unlock');
       }
 
       // Check if this completion unlocks the next level
@@ -278,6 +305,8 @@ export function GameBoard() {
           duration: 4000,
           id: 'unlock-notification'
         });
+        // Play level unlock sound
+        play_sound('level_unlock');
       }
 
       // Submit score on-chain (best-effort)
@@ -291,10 +320,13 @@ export function GameBoard() {
           toast.error('Could not submit score on-chain');
         });
     }
-  }, [cards, moves, addPoints, incrementGamesPlayed, address, currentDifficulty, selectedDifficulty, completeLevel, getUnlockedDifficulties]);
+  }, [cards, moves, addPoints, incrementGamesPlayed, address, currentDifficulty, selectedDifficulty, completeLevel, getUnlockedDifficulties, checkAndUnlockAchievements, play_sound]);
 
   const handleCardClick = (cardId: number) => {
     if (flippedCards.length >= 2 || !address) return;
+    
+    // Play card flip sound
+    play_sound('card_flip');
     
     setCards(prev => prev.map(card => 
       card.id === cardId ? { ...card, isFlipped: true } : card
@@ -305,21 +337,32 @@ export function GameBoard() {
   const handleDifficultyChange = (difficulty: DifficultyId) => {
     if (isDifficultyUnlocked(difficulty)) {
       setSelectedDifficulty(difficulty);
+      play_sound('difficulty_select');
     }
   };
 
-  const handleStartGame = () => {
+  const handleStartGame = useCallback(() => {
     if (!address) return;
+    play_sound('button_click');
     initializeGame();
-  };
+    // Fade in background music when game starts
+    if (musicEnabled) {
+      fade_in();
+    }
+  }, [address, play_sound, initializeGame, musicEnabled, fade_in]);
 
-  const handleNewGame = () => {
+  const handleNewGame = useCallback(() => {
+    play_sound('button_click');
     setShowDifficultySelector(true);
     setCards([]);
     setFlippedCards([]);
     setMoves(0);
     setIsGameComplete(false);
-  };
+    // Fade out music when returning to difficulty selector
+    if (musicEnabled) {
+      fade_out();
+    }
+  }, [play_sound, musicEnabled, fade_out]);
 
   const getGridClassName = () => {
     const { gridCols } = currentDifficulty;

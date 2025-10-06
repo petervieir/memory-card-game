@@ -3,6 +3,7 @@
 import { GameBoard } from '@/components/game/GameBoard';
 import { PointsBadge } from '@/components/game/PointsBadge';
 import { BalanceNetworkBadge } from '@/components/wallet/BalanceNetworkBadge';
+import { AudioSettings } from '@/components/game/AudioSettings';
 import Link from 'next/link';
 
 export default function GamePage() {
@@ -14,12 +15,17 @@ export default function GamePage() {
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center mb-8">
-          <Link 
-            href="/" 
-            className="inline-block text-sm text-blue-400 hover:text-blue-300 mb-4"
-          >
-            ← Back to Home
-          </Link>
+          <div className="flex justify-between items-start mb-4">
+            <Link 
+              href="/" 
+              className="inline-block text-sm text-blue-400 hover:text-blue-300"
+            >
+              ← Back to Home
+            </Link>
+            
+            {/* Audio Settings */}
+            <AudioSettings />
+          </div>
           
           {/* Balance and Network Badge */}
           <div className="flex justify-center mb-4">
