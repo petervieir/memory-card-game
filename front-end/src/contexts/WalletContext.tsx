@@ -16,9 +16,22 @@ if (typeof window !== 'undefined') {
   userSession = new UserSession({ appConfig });
 } else {
   // Create a mock session for SSR that won't cause errors
+  // TypeScript needs a full mock, but we only use these methods during SSR
   userSession = {
     isUserSignedIn: () => false,
     loadUserData: () => null,
+    appConfig: appConfig,
+    store: {} as any,
+    makeAuthRequestToken: () => '' as any,
+    generateAndStoreTransitKey: () => '' as any,
+    getAuthResponseToken: () => '' as any,
+    isSignInPending: () => false,
+    handlePendingSignIn: async () => ({} as any),
+    signUserOut: () => {},
+    encryptContent: () => '' as any,
+    decryptContent: () => '' as any,
+    putFile: async () => '' as any,
+    getFile: async () => null as any,
   } as UserSession;
 }
 
