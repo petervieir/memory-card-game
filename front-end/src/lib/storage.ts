@@ -30,12 +30,18 @@ export const safeStorage = {
 };
 
 // Custom storage for Zustand persist middleware
-export const createJSONStorage = () => ({
-  getItem: (name: string): string | null => {
-    return safeStorage.getItem(name);
+export const createJSONStorage = <T>() => ({
+  getItem: (name: string): { state: T } | null => {
+    const str = safeStorage.getItem(name);
+    if (!str) return null;
+    try {
+      return JSON.parse(str);
+    } catch {
+      return null;
+    }
   },
-  setItem: (name: string, value: string): void => {
-    safeStorage.setItem(name, value);
+  setItem: (name: string, value: { state: T }): void => {
+    safeStorage.setItem(name, JSON.stringify(value));
   },
   removeItem: (name: string): void => {
     safeStorage.removeItem(name);
