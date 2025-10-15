@@ -121,6 +121,7 @@ export interface GameCompletionData {
   gamesPlayed: number;
   isPerfectGame: boolean;
   hintsUsed: number;
+  highestCombo: number;
 }
 
 export const ACHIEVEMENTS: Record<string, Achievement> = {
@@ -246,5 +247,13 @@ export const ACHIEVEMENTS: Record<string, Achievement> = {
       const difficultLevels: DifficultyId[] = ['medium', 'hard', 'expert', 'master'];
       return difficultLevels.includes(data.difficulty) && data.hintsUsed === 1;
     }
+  },
+  COMBO_MASTER: {
+    id: 'combo_master',
+    name: 'Combo Master',
+    description: 'Achieve a 10+ match combo streak in a single game',
+    icon: '🔥',
+    category: 'special',
+    condition: (data) => data.highestCombo >= 10
   }
 };

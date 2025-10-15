@@ -11,7 +11,8 @@ A fully functional decentralized memory card game built on Stacks with Next.js, 
 - **🎮 Fully Functional Game** - Memory card matching with 6 difficulty levels and progressive unlocking
 - **🎯 Advanced Difficulty System** - Beginner (12 cards) to Master (32 cards) with dynamic scoring multipliers
 - **💡 Strategic Hint System** - Point-based hints with difficulty-scaled limits and 3-second reveals
-- **🏆 Comprehensive Achievement System** - 15 achievements across 4 categories (Efficiency, Mastery, Milestones, Special)
+- **🔥 Combo System** - Consecutive match rewards with multipliers up to 2.0x for epic combos
+- **🏆 Comprehensive Achievement System** - 16 achievements across 4 categories (Efficiency, Mastery, Milestones, Special)
 
 sound-effects
 - **🔊 Immersive Sound System** - Dynamic sound effects and optional background music with volume controls
@@ -122,21 +123,28 @@ Each package can be distributed independently under its respective MIT license.
 ### 📊 Advanced Scoring
 - **Dynamic Base Points**: 120-400 points based on difficulty level
 - **Efficiency Bonuses**: Earn up to 5 points per move saved under the bonus threshold
+- **Combo Multipliers**: 1.2× (3+ combo), 1.5× (5+ combo), 2.0× (10+ combo)
 - **Difficulty Multipliers**: 1.0× to 2.5× multipliers for higher difficulties
-- **Achievement Integration**: Unlock achievements for perfect games, speed runs, and milestones
+- **Achievement Integration**: Unlock achievements for perfect games, speed runs, and combos
 
 ### 🏆 Achievement System
-- **15 Unique Achievements**: Spanning 4 categories for comprehensive progression tracking
+- **16 Unique Achievements**: Spanning 4 categories for comprehensive progression tracking
 - **Move Efficiency**: Perfect Game, Speed Master, Efficiency Expert
 - **Difficulty Mastery**: Complete each difficulty level for unique badges
 - **Milestones**: First Victory, Veteran Player (10 games), Century Club (100 games)
-- **Special Rewards**: High Scorer, No Hints Master, Strategic Thinker achievements
+- **Special Rewards**: High Scorer, No Hints Master, Strategic Thinker, Combo Master
 
 ### 💡 Hint System
 - **Strategic Assistance**: Reveal matching pairs temporarily for 50 points
 - **Difficulty-Based Limits**: 1-3 hints available depending on game difficulty
 - **Smart Trade-offs**: Balance point preservation with strategic hint usage
 - **Achievement Integration**: Special rewards for no-hint completions
+
+### 🔥 Combo System
+- **Consecutive Match Rewards**: Build streaks for increasing score multipliers
+- **3-Tier Multipliers**: 1.2x, 1.5x, and 2.0x bonuses for 3+, 5+, and 10+ combos
+- **Dynamic Visual Effects**: Color-coded badges with pulse animations at milestones
+- **Skill-Based Scoring**: Master memory skills for dramatically higher scores
 
 ### 🔊 Sound System
 - **Dynamic Sound Effects**: Audio feedback for card flips, matches, achievements, and more

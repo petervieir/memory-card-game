@@ -4,9 +4,10 @@
 - **Memory Card Game Engine** - Card matching with flip animations and visual feedback
 - **Difficulty System** - 6 levels from Beginner to Master with progressive unlocking ([DIFFICULTY_SYSTEM.md](DIFFICULTY_SYSTEM.md))
 - **Dynamic Card Sizing** - Responsive layouts that adapt to screen size and grid density ([DYNAMIC_SIZING.md](DYNAMIC_SIZING.md))
-- **Achievement System** - 15 achievements across 4 categories with real-time unlocking ([ACHIEVEMENT_SYSTEM.md](ACHIEVEMENT_SYSTEM.md))
+- **Achievement System** - 16 achievements across 4 categories with real-time unlocking ([ACHIEVEMENT_SYSTEM.md](ACHIEVEMENT_SYSTEM.md))
 - **Progressive Unlock System** - Complete each difficulty level to unlock the next challenge
 - **Hint System** - Strategic hint system with difficulty-based limits and point costs ([HINT_SYSTEM.md](HINT_SYSTEM.md))
+- **Combo System** - Consecutive match rewards with multipliers up to 2.0x ([COMBO_SYSTEM.md](COMBO_SYSTEM.md))
 
 ## ✅ Blockchain Integration
 - **Stacks Wallet Integration** - Connect/disconnect with balance display and network status
@@ -47,11 +48,11 @@
 
 ### [Achievement System](./ACHIEVEMENT_SYSTEM.md)
 - **4 Categories**: Move Efficiency, Difficulty Mastery, Milestones, Special
-- **15 Total Achievements**: From "First Victory" to "Strategic Thinker"
+- **16 Total Achievements**: From "First Victory" to "Combo Master"
 - **Real-time Unlocking**: Achievements unlock immediately upon completion
 - **Visual Rewards**: Colorful badges with icons and descriptions
 - **Progress Tracking**: Category breakdown and overall completion percentage
-- **Hint-Related**: Special achievements for no-hint runs and strategic hint usage
+- **Special Achievements**: Hint efficiency, combo mastery, and high score rewards
 
 ### [Hint System](./HINT_SYSTEM.md)
 - **Strategic Gameplay**: Reveal matching pairs temporarily for 50 points
@@ -60,10 +61,18 @@
 - **Point Economy**: Trade points for assistance with smart strategic decisions
 - **Achievement Integration**: No-hint runs and efficient hint usage rewarded
 
+### [Combo System](./COMBO_SYSTEM.md)
+- **Consecutive Match Rewards**: Build streaks for increasing multipliers
+- **3-Tier Multiplier**: 1.2x (3+ combo), 1.5x (5+ combo), 2.0x (10+ combo)
+- **Dynamic Visual Effects**: Color-coded badges with pulse animations
+- **Real-time Feedback**: Toast notifications at combo milestones
+- **Skill-Based Scoring**: Higher combos = dramatically higher scores
+
 ## 📊 Scoring & Progression
 - **Base Points**: Varies by difficulty (120-400 points)
 - **Efficiency Bonus**: Fewer moves = more points (up to 5× per saved move)
-- **Multipliers**: 1.0× to 2.5× based on difficulty level
+- **Combo Multipliers**: 1.2× (3+ combo), 1.5× (5+ combo), 2.0× (10+ combo)
+- **Difficulty Multipliers**: 1.0× to 2.5× based on difficulty level
 - **Progressive Unlocking**: Complete levels to unlock higher difficulties
 - **Achievement Rewards**: Unlock achievements for various accomplishments
 - **Persistent Storage**: Per-wallet point tracking and achievement progress
@@ -77,7 +86,7 @@
 
 ---
 
-*Status: ✅ Production Ready with Hint System & Achievements*
+*Status: ✅ Production Ready with Combo System*
 *Last Updated: December 2024*
-*Total Achievements: 15 across 4 categories*
-*Latest Feature: Strategic Hint System (v3.2.0)*
+*Total Achievements: 16 across 4 categories*
+*Latest Feature: Combo System with 2.0x multipliers (v3.3.0)*
