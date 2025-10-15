@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.3.0] - 2024-12-17
+
+### Added
+- **feat**: Combo System with consecutive match tracking and score multipliers
+- **feat**: 3-tier combo multiplier system (1.2x, 1.5x, 2.0x for 3+, 5+, 10+ combos)
+- **feat**: Dynamic combo badge display with color-coded visual effects
+- **feat**: Pulse animations for combo milestones (3x, 5x, 10x)
+- **feat**: Toast notifications at combo thresholds with fire emoji progression
+- **feat**: "Combo Master" achievement for reaching 10+ combo streaks
+- **feat**: Combo tracking in game completion data for statistics
+- **feat**: Best combo display in game complete summary
+- **docs**: Comprehensive combo system documentation (COMBO_SYSTEM.md)
+- **docs**: Updated FEATURES.md to reflect 16 total achievements
+
+### Changed
+- **improve**: Score calculation now includes combo multipliers (applied before difficulty multiplier)
+- **improve**: Game stats UI shows live combo with dynamic styling
+- **improve**: Game complete message displays highest combo achieved
+- **improve**: Achievement system tracks combo performance
+
+### Technical
+- **feat**: Added `highestCombo` field to GameCompletionData interface
+- **feat**: Combo state management with currentCombo, highestCombo, showComboEffect
+- **feat**: Real-time combo tracking in match detection logic
+- **feat**: Combo multiplier calculation integrated into scoring system
+- **perf**: Efficient combo state updates with minimal re-renders
+- **fix**: Resolved nested ternary linter warnings with IIFE approach
+
 ## [3.2.0] - 2024-12-17
 
 ### Added

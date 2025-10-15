@@ -143,6 +143,9 @@ export function GameBoard() {
   const [hintsUsed, setHintsUsed] = useState(0);
   const [hintRevealedCards, setHintRevealedCards] = useState<number[]>([]);
   const [isHintActive, setIsHintActive] = useState(false);
+  const [currentCombo, setCurrentCombo] = useState(0);
+  const [highestCombo, setHighestCombo] = useState(0);
+  const [showComboEffect, setShowComboEffect] = useState(false);
   const { addPoints, incrementGamesPlayed, checkAndUnlockAchievements, setWalletAddress: setPointsWalletAddress, spendPoints, points } = usePointsStore();
   const { images, loading, selectImagesFromPool, imagePool } = useImages();
   const { address } = useWallet();
@@ -197,6 +200,9 @@ export function GameBoard() {
     setHintsUsed(0);
     setHintRevealedCards([]);
     setIsHintActive(false);
+    setCurrentCombo(0);
+    setHighestCombo(0);
+    setShowComboEffect(false);
   }, [images, address, selectImagesFromPool, currentDifficulty.pairs]);
 
   // Initialize game when images are loaded and wallet is connected
@@ -216,6 +222,35 @@ export function GameBoard() {
     const firstCard = cards.find(card => card.id === first);
     const secondCard = cards.find(card => card.id === second);
     const isMatch = firstCard?.imageSrc === secondCard?.imageSrc;
+
+    // Handle combo logic
+    if (isMatch) {
+      const newCombo = currentCombo + 1;
+      setCurrentCombo(newCombo);
+      
+      // Update highest combo if needed
+      if (newCombo > highestCombo) {
+        setHighestCombo(newCombo);
+      }
+      
+      // Show visual effect for high combos
+      if (newCombo >= 3) {
+        setShowComboEffect(true);
+        setTimeout(() => setShowComboEffect(false), 1000);
+      }
+      
+      // Show combo toast for milestones
+      if (newCombo === 3) {
+        toast.success('🔥 3x Combo! 1.2x multiplier', { duration: 2000, id: 'combo-3' });
+      } else if (newCombo === 5) {
+        toast.success('🔥🔥 5x Combo! 1.5x multiplier', { duration: 2000, id: 'combo-5' });
+      } else if (newCombo === 10) {
+        toast.success('🔥🔥🔥 10x COMBO! 2.0x multiplier!', { duration: 3000, id: 'combo-10' });
+      }
+    } else {
+      // Reset combo on miss
+      setCurrentCombo(0);
+    }
 
     // Play match/mismatch sound
     setTimeout(() => {
@@ -245,7 +280,7 @@ export function GameBoard() {
 
     setTimeout(updateCards, 1000);
     setMoves(prev => prev + 1);
-  }, [flippedCards, cards, play_sound]); // Added play_sound dependency
+  }, [flippedCards, cards, play_sound, currentCombo, highestCombo]); // Added dependencies
 
   // Handle wallet connection/disconnection
   useEffect(() => {
@@ -267,8 +302,20 @@ export function GameBoard() {
       hasAwardedRef.current = true;
       const basePoints = currentDifficulty.basePoints;
       const efficiency_bonus = Math.max(0, currentDifficulty.maxMovesForBonus - moves) * 5;
+      
+      // Calculate combo bonus multiplier
+      let comboMultiplier = 1.0;
+      if (highestCombo >= 10) {
+        comboMultiplier = 2.0;
+      } else if (highestCombo >= 5) {
+        comboMultiplier = 1.5;
+      } else if (highestCombo >= 3) {
+        comboMultiplier = 1.2;
+      }
+      
       const rawScore = basePoints + efficiency_bonus;
-      const finalScore = Math.round(rawScore * currentDifficulty.multiplier);
+      const scoreWithCombo = Math.round(rawScore * comboMultiplier);
+      const finalScore = Math.round(scoreWithCombo * currentDifficulty.multiplier);
 
       // Update stores first
       addPoints(finalScore);
@@ -283,7 +330,8 @@ export function GameBoard() {
         score: finalScore,
         gamesPlayed: newGamesPlayed, // Use the actual updated value
         isPerfectGame: moves <= currentDifficulty.maxMovesForBonus,
-        hintsUsed
+        hintsUsed,
+        highestCombo
       };
 
       // Check for achievements AFTER updating stores
@@ -327,7 +375,7 @@ export function GameBoard() {
           toast.error('Could not submit score on-chain');
         });
     }
-  }, [cards, moves, addPoints, incrementGamesPlayed, address, currentDifficulty, selectedDifficulty, completeLevel, getUnlockedDifficulties, checkAndUnlockAchievements, play_sound, hintsUsed]);
+  }, [cards, moves, addPoints, incrementGamesPlayed, address, currentDifficulty, selectedDifficulty, completeLevel, getUnlockedDifficulties, checkAndUnlockAchievements, play_sound, hintsUsed, highestCombo]);
 
   const useHint = useCallback(() => {
     // Check if hint is available
@@ -444,6 +492,9 @@ export function GameBoard() {
     setHintsUsed(0);
     setHintRevealedCards([]);
     setIsHintActive(false);
+    setCurrentCombo(0);
+    setHighestCombo(0);
+    setShowComboEffect(false);
     // Fade out music when returning to difficulty selector
     if (musicEnabled) {
       fade_out();
@@ -527,13 +578,30 @@ export function GameBoard() {
         <>
           {/* Game Stats */}
           <div className="flex justify-between items-center mb-6 p-4 bg-white/10 backdrop-blur-sm rounded-lg">
-            <div className="flex flex-col">
+            <div className="flex flex-col gap-1">
               <span className="text-sm font-medium">
                 {currentDifficulty.emoji} {currentDifficulty.name} - {moves} moves
               </span>
-              <span className="text-xs text-gray-400">
-                {currentDifficulty.pairs} pairs • Pool: {imagePool.length}/{IMAGE_POOL_SIZE}
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-gray-400">
+                  {currentDifficulty.pairs} pairs • Pool: {imagePool.length}/{IMAGE_POOL_SIZE}
+                </span>
+                {currentCombo > 0 && (
+                  <span 
+                    className={`text-xs font-bold px-2 py-0.5 rounded transition-all duration-300 ${
+                      (() => {
+                        if (showComboEffect) return 'bg-orange-500 text-white scale-110 animate-pulse';
+                        if (currentCombo >= 10) return 'bg-red-500 text-white';
+                        if (currentCombo >= 5) return 'bg-orange-500 text-white';
+                        return 'bg-yellow-500 text-white';
+                      })()
+                    }`}
+                  >
+                    🔥 {currentCombo}x Combo
+                    {currentCombo >= 10 && ' 🔥🔥'}
+                  </span>
+                )}
+              </div>
             </div>
             <div className="flex gap-2 items-center">
               <button
@@ -563,10 +631,22 @@ export function GameBoard() {
               <h3 className="font-bold text-green-400 mb-2">🎉 Congratulations!</h3>
               <p className="text-sm">
                 Game completed in {moves} moves!<br/>
-                Points earned: {Math.round((currentDifficulty.basePoints + Math.max(0, currentDifficulty.maxMovesForBonus - moves) * 5) * currentDifficulty.multiplier)}
+                Points earned: {(() => {
+                  const basePoints = currentDifficulty.basePoints;
+                  const efficiencyBonus = Math.max(0, currentDifficulty.maxMovesForBonus - moves) * 5;
+                  let comboMult = 1.0;
+                  if (highestCombo >= 10) comboMult = 2.0;
+                  else if (highestCombo >= 5) comboMult = 1.5;
+                  else if (highestCombo >= 3) comboMult = 1.2;
+                  return Math.round((basePoints + efficiencyBonus) * comboMult * currentDifficulty.multiplier);
+                })()}
               </p>
               <p className="text-xs text-gray-400 mt-2">
                 Difficulty: {currentDifficulty.name} ({currentDifficulty.multiplier}x multiplier)
+                {highestCombo > 0 && ` • Best Combo: ${highestCombo}x`}
+                {highestCombo >= 10 && ' 🔥🔥🔥'}
+                {highestCombo >= 5 && highestCombo < 10 && ' 🔥🔥'}
+                {highestCombo >= 3 && highestCombo < 5 && ' 🔥'}
               </p>
             </div>
           )}
