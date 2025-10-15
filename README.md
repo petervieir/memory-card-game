@@ -10,7 +10,8 @@ A fully functional decentralized memory card game built on Stacks with Next.js, 
 
 - **🎮 Fully Functional Game** - Memory card matching with 6 difficulty levels and progressive unlocking
 - **🎯 Advanced Difficulty System** - Beginner (12 cards) to Master (32 cards) with dynamic scoring multipliers
-- **🏆 Comprehensive Achievement System** - 13 achievements across 4 categories (Efficiency, Mastery, Milestones, Special)
+- **💡 Strategic Hint System** - Point-based hints with difficulty-scaled limits and 3-second reveals
+- **🏆 Comprehensive Achievement System** - 15 achievements across 4 categories (Efficiency, Mastery, Milestones, Special)
 
 sound-effects
 - **🔊 Immersive Sound System** - Dynamic sound effects and optional background music with volume controls
@@ -125,11 +126,17 @@ Each package can be distributed independently under its respective MIT license.
 - **Achievement Integration**: Unlock achievements for perfect games, speed runs, and milestones
 
 ### 🏆 Achievement System
-- **13 Unique Achievements**: Spanning 4 categories for comprehensive progression tracking
+- **15 Unique Achievements**: Spanning 4 categories for comprehensive progression tracking
 - **Move Efficiency**: Perfect Game, Speed Master, Efficiency Expert
 - **Difficulty Mastery**: Complete each difficulty level for unique badges
 - **Milestones**: First Victory, Veteran Player (10 games), Century Club (100 games)
-- **Special Rewards**: High Scorer achievement for exceptional performance
+- **Special Rewards**: High Scorer, No Hints Master, Strategic Thinker achievements
+
+### 💡 Hint System
+- **Strategic Assistance**: Reveal matching pairs temporarily for 50 points
+- **Difficulty-Based Limits**: 1-3 hints available depending on game difficulty
+- **Smart Trade-offs**: Balance point preservation with strategic hint usage
+- **Achievement Integration**: Special rewards for no-hint completions
 
 ### 🔊 Sound System
 - **Dynamic Sound Effects**: Audio feedback for card flips, matches, achievements, and more

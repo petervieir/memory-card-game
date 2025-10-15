@@ -140,7 +140,10 @@ export function GameBoard() {
   const [selectedDifficulty, setSelectedDifficulty] = useState<DifficultyId>('beginner');
   const [showDifficultySelector, setShowDifficultySelector] = useState(true);
   const [showAchievementNotification, setShowAchievementNotification] = useState<string | null>(null);
-  const { addPoints, incrementGamesPlayed, checkAndUnlockAchievements, setWalletAddress: setPointsWalletAddress } = usePointsStore();
+  const [hintsUsed, setHintsUsed] = useState(0);
+  const [hintRevealedCards, setHintRevealedCards] = useState<number[]>([]);
+  const [isHintActive, setIsHintActive] = useState(false);
+  const { addPoints, incrementGamesPlayed, checkAndUnlockAchievements, setWalletAddress: setPointsWalletAddress, spendPoints, points } = usePointsStore();
   const { images, loading, selectImagesFromPool, imagePool } = useImages();
   const { address } = useWallet();
   const { 
@@ -191,6 +194,9 @@ export function GameBoard() {
     setMoves(0);
     setIsGameComplete(false);
     setShowDifficultySelector(false);
+    setHintsUsed(0);
+    setHintRevealedCards([]);
+    setIsHintActive(false);
   }, [images, address, selectImagesFromPool, currentDifficulty.pairs]);
 
   // Initialize game when images are loaded and wallet is connected
@@ -276,7 +282,8 @@ export function GameBoard() {
         difficulty: selectedDifficulty,
         score: finalScore,
         gamesPlayed: newGamesPlayed, // Use the actual updated value
-        isPerfectGame: moves <= currentDifficulty.maxMovesForBonus
+        isPerfectGame: moves <= currentDifficulty.maxMovesForBonus,
+        hintsUsed
       };
 
       // Check for achievements AFTER updating stores
@@ -320,10 +327,86 @@ export function GameBoard() {
           toast.error('Could not submit score on-chain');
         });
     }
-  }, [cards, moves, addPoints, incrementGamesPlayed, address, currentDifficulty, selectedDifficulty, completeLevel, getUnlockedDifficulties, checkAndUnlockAchievements, play_sound]);
+  }, [cards, moves, addPoints, incrementGamesPlayed, address, currentDifficulty, selectedDifficulty, completeLevel, getUnlockedDifficulties, checkAndUnlockAchievements, play_sound, hintsUsed]);
+
+  const useHint = useCallback(() => {
+    // Check if hint is available
+    const hintsRemaining = currentDifficulty.maxHints - hintsUsed;
+    if (hintsRemaining <= 0) {
+      toast.error('No hints remaining!');
+      return;
+    }
+
+    // Check if player has enough points
+    if (points < 50) {
+      toast.error('Not enough points! Hints cost 50 points.');
+      return;
+    }
+
+    // Check if hint is already active
+    if (isHintActive) {
+      return;
+    }
+
+    // Get all unmatched cards
+    const unmatchedCards = cards.filter(card => !card.isMatched && !card.isFlipped);
+    
+    if (unmatchedCards.length < 2) {
+      toast.error('No pairs left to reveal!');
+      return;
+    }
+
+    // Find a random unmatched pair
+    const imageSources = Array.from(new Set(unmatchedCards.map(c => c.imageSrc)));
+    const randomImage = imageSources[Math.floor(Math.random() * imageSources.length)];
+    const pairCards = unmatchedCards.filter(c => c.imageSrc === randomImage);
+    
+    if (pairCards.length < 2) {
+      // Fallback: just pick any two unmatched cards with same image
+      const cardsByImage = unmatchedCards.reduce((acc, card) => {
+        if (!acc[card.imageSrc]) acc[card.imageSrc] = [];
+        acc[card.imageSrc].push(card);
+        return acc;
+      }, {} as Record<string, GameCard[]>);
+      
+      const validPairs = Object.values(cardsByImage).filter(cards => cards.length >= 2);
+      if (validPairs.length === 0) return;
+      
+      const selectedPair = validPairs[Math.floor(Math.random() * validPairs.length)];
+      pairCards.length = 0;
+      pairCards.push(selectedPair[0], selectedPair[1]);
+    }
+
+    // Deduct points
+    const pointsDeducted = spendPoints(50);
+    if (!pointsDeducted) {
+      toast.error('Could not deduct points!');
+      return;
+    }
+
+    // Reveal the pair
+    const cardIds = [pairCards[0].id, pairCards[1].id];
+    setHintRevealedCards(cardIds);
+    setIsHintActive(true);
+    setHintsUsed(prev => prev + 1);
+    
+    // Play hint sound
+    play_sound('button_click');
+    
+    toast.success(`💡 Hint used! -50 points (${hintsRemaining - 1} hints remaining)`, {
+      duration: 2000,
+      id: 'hint-used'
+    });
+
+    // Hide the cards after 3 seconds
+    setTimeout(() => {
+      setHintRevealedCards([]);
+      setIsHintActive(false);
+    }, 3000);
+  }, [cards, hintsUsed, currentDifficulty.maxHints, points, spendPoints, play_sound, isHintActive]);
 
   const handleCardClick = (cardId: number) => {
-    if (flippedCards.length >= 2 || !address) return;
+    if (flippedCards.length >= 2 || !address || isHintActive) return;
     
     // Play card flip sound
     play_sound('card_flip');
@@ -358,6 +441,9 @@ export function GameBoard() {
     setFlippedCards([]);
     setMoves(0);
     setIsGameComplete(false);
+    setHintsUsed(0);
+    setHintRevealedCards([]);
+    setIsHintActive(false);
     // Fade out music when returning to difficulty selector
     if (musicEnabled) {
       fade_out();
@@ -449,12 +535,26 @@ export function GameBoard() {
                 {currentDifficulty.pairs} pairs • Pool: {imagePool.length}/{IMAGE_POOL_SIZE}
               </span>
             </div>
-            <button
-              onClick={handleNewGame}
-              className="px-3 py-1 text-sm bg-blue-500 hover:bg-blue-600 rounded transition-colors"
-            >
-              New Game
-            </button>
+            <div className="flex gap-2 items-center">
+              <button
+                onClick={useHint}
+                disabled={isGameComplete || hintsUsed >= currentDifficulty.maxHints || points < 50 || isHintActive}
+                className={`px-3 py-1 text-sm rounded transition-colors flex items-center gap-1 ${
+                  isGameComplete || hintsUsed >= currentDifficulty.maxHints || points < 50 || isHintActive
+                    ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
+                    : 'bg-yellow-500 hover:bg-yellow-600 text-white'
+                }`}
+                title={`Reveal a matching pair for 3 seconds (Costs 50 points)`}
+              >
+                💡 Hint ({currentDifficulty.maxHints - hintsUsed})
+              </button>
+              <button
+                onClick={handleNewGame}
+                className="px-3 py-1 text-sm bg-blue-500 hover:bg-blue-600 rounded transition-colors"
+              >
+                New Game
+              </button>
+            </div>
           </div>
 
           {/* Game Complete Message */}
@@ -473,16 +573,19 @@ export function GameBoard() {
 
           {/* Game Board */}
           <div className={getGridClassName()}>
-            {cards.map((card) => (
-              <Card
-                key={card.id}
-                imageSrc={card.imageSrc}
-                isFlipped={card.isFlipped}
-                isMatched={card.isMatched}
-                onClick={() => handleCardClick(card.id)}
-                sizeClass={cardSize.className}
-              />
-            ))}
+            {cards.map((card) => {
+              const isHintRevealed = hintRevealedCards.includes(card.id);
+              return (
+                <Card
+                  key={card.id}
+                  imageSrc={card.imageSrc}
+                  isFlipped={card.isFlipped || isHintRevealed}
+                  isMatched={card.isMatched}
+                  onClick={() => handleCardClick(card.id)}
+                  sizeClass={cardSize.className}
+                />
+              );
+            })}
           </div>
         </>
       )}

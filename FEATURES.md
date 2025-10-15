@@ -4,8 +4,9 @@
 - **Memory Card Game Engine** - Card matching with flip animations and visual feedback
 - **Difficulty System** - 6 levels from Beginner to Master with progressive unlocking ([DIFFICULTY_SYSTEM.md](DIFFICULTY_SYSTEM.md))
 - **Dynamic Card Sizing** - Responsive layouts that adapt to screen size and grid density ([DYNAMIC_SIZING.md](DYNAMIC_SIZING.md))
-- **Achievement System** - 13 achievements across 4 categories with real-time unlocking ([ACHIEVEMENT_SYSTEM.md](ACHIEVEMENT_SYSTEM.md))
+- **Achievement System** - 15 achievements across 4 categories with real-time unlocking ([ACHIEVEMENT_SYSTEM.md](ACHIEVEMENT_SYSTEM.md))
 - **Progressive Unlock System** - Complete each difficulty level to unlock the next challenge
+- **Hint System** - Strategic hint system with difficulty-based limits and point costs ([HINT_SYSTEM.md](HINT_SYSTEM.md))
 
 ## ✅ Blockchain Integration
 - **Stacks Wallet Integration** - Connect/disconnect with balance display and network status
@@ -46,10 +47,18 @@
 
 ### [Achievement System](./ACHIEVEMENT_SYSTEM.md)
 - **4 Categories**: Move Efficiency, Difficulty Mastery, Milestones, Special
-- **13 Total Achievements**: From "First Victory" to "Century Club"
+- **15 Total Achievements**: From "First Victory" to "Strategic Thinker"
 - **Real-time Unlocking**: Achievements unlock immediately upon completion
 - **Visual Rewards**: Colorful badges with icons and descriptions
 - **Progress Tracking**: Category breakdown and overall completion percentage
+- **Hint-Related**: Special achievements for no-hint runs and strategic hint usage
+
+### [Hint System](./HINT_SYSTEM.md)
+- **Strategic Gameplay**: Reveal matching pairs temporarily for 50 points
+- **Difficulty-Based Limits**: 1-3 hints available depending on difficulty level
+- **Visual Feedback**: 3-second reveal with clear indication and toast notifications
+- **Point Economy**: Trade points for assistance with smart strategic decisions
+- **Achievement Integration**: No-hint runs and efficient hint usage rewarded
 
 ## 📊 Scoring & Progression
 - **Base Points**: Varies by difficulty (120-400 points)
@@ -68,6 +77,7 @@
 
 ---
 
-*Status: ✅ Production Ready with Full Achievement System*
+*Status: ✅ Production Ready with Hint System & Achievements*
 *Last Updated: December 2024*
-*Total Achievements: 13 across 4 categories*
+*Total Achievements: 15 across 4 categories*
+*Latest Feature: Strategic Hint System (v3.2.0)*
