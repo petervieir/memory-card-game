@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.2.0] - 2024-12-17
+
+### Added
+- **feat**: Strategic Hint System with point-based card pair reveals
+- **feat**: Difficulty-based hint limits (1-3 hints per game depending on difficulty)
+- **feat**: 3-second temporary card reveal when using hints
+- **feat**: Point cost system (50 points per hint)
+- **feat**: Hint counter display showing remaining hints
+- **feat**: Visual feedback with toast notifications for hint usage
+- **feat**: "No Hints Master" achievement for completing games without hints
+- **feat**: "Strategic Thinker" achievement for efficient hint usage on difficult levels
+- **docs**: Comprehensive hint system documentation (HINT_SYSTEM.md)
+- **docs**: Updated FEATURES.md to reflect 15 total achievements
+
+### Changed
+- **improve**: GameBoard now tracks hint usage for achievement system
+- **improve**: Card rendering supports hint-revealed state
+- **improve**: Game completion data includes hints used for analytics
+- **improve**: Point economy expanded with spending mechanism
+
+### Technical
+- **feat**: Added `maxHints` field to Difficulty interface
+- **feat**: Added `hintsUsed` tracking in GameCompletionData
+- **feat**: New `useHint` callback function with validation and reveal logic
+- **feat**: State management for hint reveals with auto-reset timer
+- **feat**: Integration with points store's `spendPoints` function
+- **perf**: Efficient unmatched pair selection algorithm
+
 ## [3.1.0] - 2024-12-17
 
 ### Added

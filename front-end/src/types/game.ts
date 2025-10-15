@@ -8,6 +8,7 @@ export interface Difficulty {
   basePoints: number;
   multiplier: number;
   maxMovesForBonus: number;
+  maxHints: number;
   description: string;
   emoji: string;
 }
@@ -23,6 +24,7 @@ export const DIFFICULTIES: Record<string, Difficulty> = {
     basePoints: 120,
     multiplier: 1.0,
     maxMovesForBonus: 25,
+    maxHints: 3,
     description: '6 pairs - Perfect for beginners',
     emoji: '😊'
   },
@@ -36,6 +38,7 @@ export const DIFFICULTIES: Record<string, Difficulty> = {
     basePoints: 160,
     multiplier: 1.2,
     maxMovesForBonus: 35,
+    maxHints: 3,
     description: '8 pairs - Getting comfortable',
     emoji: '🙂'
   },
@@ -49,6 +52,7 @@ export const DIFFICULTIES: Record<string, Difficulty> = {
     basePoints: 200,
     multiplier: 1.5,
     maxMovesForBonus: 45,
+    maxHints: 2,
     description: '10 pairs - A moderate challenge',
     emoji: '🤔'
   },
@@ -62,6 +66,7 @@ export const DIFFICULTIES: Record<string, Difficulty> = {
     basePoints: 250,
     multiplier: 1.8,
     maxMovesForBonus: 55,
+    maxHints: 2,
     description: '12 pairs - For experienced players',
     emoji: '😤'
   },
@@ -75,6 +80,7 @@ export const DIFFICULTIES: Record<string, Difficulty> = {
     basePoints: 300,
     multiplier: 2.2,
     maxMovesForBonus: 65,
+    maxHints: 1,
     description: '14 pairs - Ultimate memory test',
     emoji: '🧠'
   },
@@ -88,6 +94,7 @@ export const DIFFICULTIES: Record<string, Difficulty> = {
     basePoints: 400,
     multiplier: 2.5,
     maxMovesForBonus: 75,
+    maxHints: 1,
     description: '16 pairs - Legendary challenge',
     emoji: '🏆'
   }
@@ -113,6 +120,7 @@ export interface GameCompletionData {
   score: number;
   gamesPlayed: number;
   isPerfectGame: boolean;
+  hintsUsed: number;
 }
 
 export const ACHIEVEMENTS: Record<string, Achievement> = {
@@ -219,5 +227,24 @@ export const ACHIEVEMENTS: Record<string, Achievement> = {
     icon: '🌟',
     category: 'special',
     condition: (data) => data.score >= 1000
+  },
+  NO_HINTS_MASTER: {
+    id: 'no_hints_master',
+    name: 'No Hints Master',
+    description: 'Complete a game without using any hints',
+    icon: '🧩',
+    category: 'special',
+    condition: (data) => data.hintsUsed === 0
+  },
+  STRATEGIC_THINKER: {
+    id: 'strategic_thinker',
+    name: 'Strategic Thinker',
+    description: 'Complete a difficult game (Medium+) using only 1 hint',
+    icon: '🎓',
+    category: 'special',
+    condition: (data) => {
+      const difficultLevels: DifficultyId[] = ['medium', 'hard', 'expert', 'master'];
+      return difficultLevels.includes(data.difficulty) && data.hintsUsed === 1;
+    }
   }
 };
