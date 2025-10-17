@@ -221,39 +221,50 @@ export function GameBoard() {
     const [first, second] = flippedCards;
     const firstCard = cards.find(card => card.id === first);
     const secondCard = cards.find(card => card.id === second);
-    const isMatch = firstCard?.imageSrc === secondCard?.imageSrc;
+    
+    // Safety check: ensure both cards exist and are different
+    if (!firstCard || !secondCard || first === second) {
+      setFlippedCards([]);
+      return;
+    }
+    
+    const isMatch = firstCard.imageSrc === secondCard.imageSrc;
 
-    // Handle combo logic
+    // Handle combo logic - use functional updates to avoid dependency issues
     if (isMatch) {
-      const newCombo = currentCombo + 1;
-      setCurrentCombo(newCombo);
-      
-      // Update highest combo if needed
-      if (newCombo > highestCombo) {
-        setHighestCombo(newCombo);
-      }
-      
-      // Show visual effect for high combos
-      if (newCombo >= 3) {
-        setShowComboEffect(true);
-        setTimeout(() => setShowComboEffect(false), 1000);
-      }
-      
-      // Show combo toast for milestones
-      if (newCombo === 3) {
-        toast.success('🔥 3x Combo! 1.2x multiplier', { duration: 2000, id: 'combo-3' });
-      } else if (newCombo === 5) {
-        toast.success('🔥🔥 5x Combo! 1.5x multiplier', { duration: 2000, id: 'combo-5' });
-      } else if (newCombo === 10) {
-        toast.success('🔥🔥🔥 10x COMBO! 2.0x multiplier!', { duration: 3000, id: 'combo-10' });
-      }
+      setCurrentCombo(prev => {
+        const newCombo = prev + 1;
+        
+        // Update highest combo if needed
+        setHighestCombo(current => Math.max(current, newCombo));
+        
+        // Show visual effect for high combos
+        if (newCombo >= 3) {
+          setShowComboEffect(true);
+          setTimeout(() => setShowComboEffect(false), 1000);
+        }
+        
+        // Show combo toast for milestones
+        if (newCombo === 3) {
+          toast.success('🔥 3x Combo! 1.2x multiplier', { duration: 2000, id: 'combo-3' });
+        } else if (newCombo === 5) {
+          toast.success('🔥🔥 5x Combo! 1.5x multiplier', { duration: 2000, id: 'combo-5' });
+        } else if (newCombo === 10) {
+          toast.success('🔥🔥🔥 10x COMBO! 2.0x multiplier!', { duration: 3000, id: 'combo-10' });
+        }
+        
+        return newCombo;
+      });
     } else {
       // Reset combo on miss
       setCurrentCombo(0);
     }
 
+    // Increment moves immediately
+    setMoves(prev => prev + 1);
+
     // Play match/mismatch sound
-    setTimeout(() => {
+    const soundTimeout = setTimeout(() => {
       if (isMatch) {
         play_sound('card_match');
       } else {
@@ -278,9 +289,18 @@ export function GameBoard() {
       setFlippedCards([]);
     };
 
-    setTimeout(updateCards, 1000);
-    setMoves(prev => prev + 1);
-  }, [flippedCards, cards, play_sound, currentCombo, highestCombo]); // Added dependencies
+    const updateTimeout = setTimeout(updateCards, 1000);
+    
+    // Cleanup timeouts if effect re-runs
+    return () => {
+      clearTimeout(soundTimeout);
+      clearTimeout(updateTimeout);
+    };
+    // We intentionally exclude 'cards', 'currentCombo', and 'highestCombo' to avoid re-running
+    // The effect should only run when flippedCards changes to length 2
+    // Combo state uses functional updates to access current values
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [flippedCards, play_sound]);
 
   // Handle wallet connection/disconnection
   useEffect(() => {
@@ -352,7 +372,7 @@ export function GameBoard() {
 
       // Check if this completion unlocks the next level
       const unlockedDifficulties = getUnlockedDifficulties();
-      const currentIndex = DIFFICULTY_ORDER.indexOf(selectedDifficulty as any);
+      const currentIndex = DIFFICULTY_ORDER.indexOf(selectedDifficulty as typeof DIFFICULTY_ORDER[number]);
       const nextDifficulty = DIFFICULTY_ORDER[currentIndex + 1] as DifficultyId;
       
       if (nextDifficulty && unlockedDifficulties.includes(nextDifficulty)) {
@@ -455,6 +475,18 @@ export function GameBoard() {
 
   const handleCardClick = (cardId: number) => {
     if (flippedCards.length >= 2 || !address || isHintActive) return;
+    
+    // Find the card being clicked
+    const clickedCard = cards.find(card => card.id === cardId);
+    
+    // Prevent clicking if card is already flipped, matched, in flippedCards array, or hint-revealed
+    if (!clickedCard || 
+        clickedCard.isFlipped || 
+        clickedCard.isMatched || 
+        flippedCards.includes(cardId) ||
+        hintRevealedCards.includes(cardId)) {
+      return;
+    }
     
     // Play card flip sound
     play_sound('card_flip');
