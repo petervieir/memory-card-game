@@ -38,7 +38,7 @@ export default function Home() {
         </div>
 
         {/* Game Links */}
-        <div className="max-w-2xl mx-auto mb-12 grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="max-w-3xl mx-auto mb-12 grid grid-cols-1 md:grid-cols-3 gap-6">
           <Link
             href="/game"
             className="group block p-6 bg-white/5 backdrop-blur-sm rounded-lg border border-white/10 hover:bg-white/10 transition-colors"
@@ -48,6 +48,19 @@ export default function Home() {
               <h3 className="text-lg font-semibold mb-2">Play Memory Game</h3>
               <p className="text-sm text-muted-foreground">
                 Match cards to earn points. Complete faster for bonus points!
+              </p>
+            </div>
+          </Link>
+
+          <Link
+            href="/stats"
+            className="group block p-6 bg-white/5 backdrop-blur-sm rounded-lg border border-white/10 hover:bg-white/10 transition-colors"
+          >
+            <div className="text-center">
+              <div className="text-4xl mb-3">📊</div>
+              <h3 className="text-lg font-semibold mb-2">Personal Statistics</h3>
+              <p className="text-sm text-muted-foreground">
+                View your performance metrics and track your improvement over time.
               </p>
             </div>
           </Link>

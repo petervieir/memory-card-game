@@ -16,12 +16,26 @@ export default function GamePage() {
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex justify-between items-start mb-4">
-            <Link 
-              href="/" 
-              className="inline-block text-sm text-blue-400 hover:text-blue-300"
-            >
-              ← Back to Home
-            </Link>
+            <div className="flex gap-4">
+              <Link 
+                href="/" 
+                className="inline-block text-sm text-blue-400 hover:text-blue-300"
+              >
+                ← Back to Home
+              </Link>
+              <Link 
+                href="/stats" 
+                className="inline-block text-sm text-purple-400 hover:text-purple-300"
+              >
+                📊 Statistics
+              </Link>
+              <Link 
+                href="/achievements" 
+                className="inline-block text-sm text-yellow-400 hover:text-yellow-300"
+              >
+                🏆 Achievements
+              </Link>
+            </div>
             
             {/* Audio Settings */}
             <AudioSettings />

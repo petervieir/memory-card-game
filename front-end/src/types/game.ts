@@ -310,7 +310,7 @@ export const ACHIEVEMENTS: Record<string, Achievement> = {
     description: 'Complete 10 games in Timer Mode',
     icon: '🕐',
     category: 'time_attack',
-    condition: (data) => {
+    condition: () => {
       // This will be checked via a separate counter in the points store
       return false; // Handled separately
     }

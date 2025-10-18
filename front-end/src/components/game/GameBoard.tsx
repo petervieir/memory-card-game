@@ -8,6 +8,7 @@ import { usePointsStore } from '@/stores/usePointsStore';
 import { useDifficultyStore } from '@/stores/useDifficultyStore';
 import { useAudioStore } from '@/stores/useAudioStore';
 import { useTimerStore } from '@/stores/useTimerStore';
+import { useStatsStore } from '@/stores/useStatsStore';
 import { useSoundEffects, useBackgroundMusic } from '@/hooks/useSoundEffects';
 import { submitScore } from '@/lib/tx';
 import toast from 'react-hot-toast';
@@ -162,6 +163,7 @@ export function GameBoard() {
     getUnlockedDifficulties 
   } = useDifficultyStore();
   const { timerEnabled } = useTimerStore();
+  const { setWalletAddress: setStatsWalletAddress, addGameRecord } = useStatsStore();
   
   // Audio hooks
   const { soundEffectsEnabled, soundEffectsVolume, musicEnabled, musicVolume } = useAudioStore();
@@ -323,6 +325,7 @@ export function GameBoard() {
   useEffect(() => {
     setWalletAddress(address);
     setPointsWalletAddress(address);
+    setStatsWalletAddress(address);
     
     if (!address) {
       setCards([]);
@@ -331,7 +334,7 @@ export function GameBoard() {
       setIsGameComplete(false);
       setShowDifficultySelector(true);
     }
-  }, [address, setWalletAddress, setPointsWalletAddress]);
+  }, [address, setWalletAddress, setPointsWalletAddress, setStatsWalletAddress]);
 
   // Handle timer tick
   const handleTimerTick = useCallback((secondsRemaining: number) => {
@@ -359,12 +362,25 @@ export function GameBoard() {
       icon: '⏰'
     });
     
+    // Record failed game in stats
+    addGameRecord({
+      difficulty: selectedDifficulty,
+      moves,
+      score: 0,
+      hintsUsed,
+      combo: highestCombo,
+      timerMode: true,
+      timeRemaining: 0,
+      totalTime: currentDifficulty.timerSeconds,
+      completed: false
+    });
+    
     // Show final state but don't award points
     setTimeout(() => {
       setShowDifficultySelector(true);
       setCards([]);
     }, 3000);
-  }, [play_sound]);
+  }, [play_sound, addGameRecord, selectedDifficulty, moves, hintsUsed, highestCombo, currentDifficulty]);
 
   // Check if game is complete
   useEffect(() => {
@@ -424,6 +440,19 @@ export function GameBoard() {
       const newAchievements = checkAndUnlockAchievements(gameData);
       setIsGameComplete(true);
 
+      // Record game in stats
+      addGameRecord({
+        difficulty: selectedDifficulty,
+        moves,
+        score: finalScore,
+        hintsUsed,
+        combo: highestCombo,
+        timerMode: timerEnabled,
+        timeRemaining: timerEnabled ? timeRemaining : undefined,
+        totalTime: timerEnabled ? currentDifficulty.timerSeconds : undefined,
+        completed: true
+      });
+
       // Play game complete sound
       play_sound('game_complete');
 
@@ -461,7 +490,7 @@ export function GameBoard() {
           toast.error('Could not submit score on-chain');
         });
     }
-  }, [cards, moves, addPoints, incrementGamesPlayed, address, currentDifficulty, selectedDifficulty, completeLevel, getUnlockedDifficulties, checkAndUnlockAchievements, play_sound, hintsUsed, highestCombo, timerEnabled, timeRemaining, isTimerActive]);
+  }, [cards, moves, addPoints, incrementGamesPlayed, address, currentDifficulty, selectedDifficulty, completeLevel, getUnlockedDifficulties, checkAndUnlockAchievements, play_sound, hintsUsed, highestCombo, timerEnabled, timeRemaining, isTimerActive, addGameRecord]);
 
   const useHint = useCallback(() => {
     // Check if hint is available
@@ -767,7 +796,7 @@ export function GameBoard() {
           {/* Time Up Message */}
           {isTimeUp && !isGameComplete && (
             <div className="mb-6 p-4 bg-red-500/20 border border-red-500 rounded-lg text-center">
-              <h3 className="font-bold text-red-400 mb-2">⏰ Time's Up!</h3>
+              <h3 className="font-bold text-red-400 mb-2">⏰ Time&apos;s Up!</h3>
               <p className="text-sm">
                 You ran out of time!<br/>
                 No points awarded this round.

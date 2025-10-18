@@ -93,13 +93,19 @@ export default function AchievementsPage() {
           </div>
         )}
 
-        {/* Back to Game */}
-        <div className="text-center mt-12">
+        {/* Action Buttons */}
+        <div className="flex flex-wrap gap-4 justify-center mt-12">
           <Link
             href="/game"
             className="inline-block px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-lg transition-colors"
           >
             🎮 Play Memory Game
+          </Link>
+          <Link
+            href="/stats"
+            className="inline-block px-6 py-3 bg-purple-500 hover:bg-purple-600 text-white font-semibold rounded-lg transition-colors"
+          >
+            📊 View Statistics
           </Link>
         </div>
       </div>
