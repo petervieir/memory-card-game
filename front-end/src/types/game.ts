@@ -11,6 +11,7 @@ export interface Difficulty {
   maxHints: number;
   description: string;
   emoji: string;
+  timerSeconds: number;
 }
 
 export const DIFFICULTIES: Record<string, Difficulty> = {
@@ -22,11 +23,12 @@ export const DIFFICULTIES: Record<string, Difficulty> = {
     gridCols: 4,
     gridRows: 3,
     basePoints: 120,
-    multiplier: 1.0,
+    multiplier: 1,
     maxMovesForBonus: 25,
     maxHints: 3,
     description: '6 pairs - Perfect for beginners',
-    emoji: '😊'
+    emoji: '😊',
+    timerSeconds: 60
   },
   easy: {
     id: 'easy',
@@ -40,7 +42,8 @@ export const DIFFICULTIES: Record<string, Difficulty> = {
     maxMovesForBonus: 35,
     maxHints: 3,
     description: '8 pairs - Getting comfortable',
-    emoji: '🙂'
+    emoji: '🙂',
+    timerSeconds: 90
   },
   medium: {
     id: 'medium',
@@ -54,7 +57,8 @@ export const DIFFICULTIES: Record<string, Difficulty> = {
     maxMovesForBonus: 45,
     maxHints: 2,
     description: '10 pairs - A moderate challenge',
-    emoji: '🤔'
+    emoji: '🤔',
+    timerSeconds: 100
   },
   hard: {
     id: 'hard',
@@ -68,7 +72,8 @@ export const DIFFICULTIES: Record<string, Difficulty> = {
     maxMovesForBonus: 55,
     maxHints: 2,
     description: '12 pairs - For experienced players',
-    emoji: '😤'
+    emoji: '😤',
+    timerSeconds: 110
   },
   expert: {
     id: 'expert',
@@ -82,7 +87,8 @@ export const DIFFICULTIES: Record<string, Difficulty> = {
     maxMovesForBonus: 65,
     maxHints: 1,
     description: '14 pairs - Ultimate memory test',
-    emoji: '🧠'
+    emoji: '🧠',
+    timerSeconds: 120
   },
   master: {
     id: 'master',
@@ -96,7 +102,8 @@ export const DIFFICULTIES: Record<string, Difficulty> = {
     maxMovesForBonus: 75,
     maxHints: 1,
     description: '16 pairs - Legendary challenge',
-    emoji: '🏆'
+    emoji: '🏆',
+    timerSeconds: 120
   }
 };
 
@@ -110,7 +117,7 @@ export interface Achievement {
   description: string;
   icon: string;
   condition: (gameData: GameCompletionData) => boolean;
-  category: 'moves' | 'difficulty' | 'milestone' | 'special';
+  category: 'moves' | 'difficulty' | 'milestone' | 'special' | 'time_attack';
 }
 
 export interface GameCompletionData {
@@ -122,6 +129,9 @@ export interface GameCompletionData {
   isPerfectGame: boolean;
   hintsUsed: number;
   highestCombo: number;
+  timerMode: boolean;
+  timeRemaining?: number;
+  totalTime?: number;
 }
 
 export const ACHIEVEMENTS: Record<string, Achievement> = {
@@ -255,5 +265,54 @@ export const ACHIEVEMENTS: Record<string, Achievement> = {
     icon: '🔥',
     category: 'special',
     condition: (data) => data.highestCombo >= 10
+  },
+  TIME_ATTACK_WINNER: {
+    id: 'time_attack_winner',
+    name: 'Time Attack Winner',
+    description: 'Complete a game in Timer Mode',
+    icon: '⏱️',
+    category: 'time_attack',
+    condition: (data) => data.timerMode && (data.timeRemaining ?? 0) > 0
+  },
+  SPEED_DEMON: {
+    id: 'speed_demon',
+    name: 'Speed Demon',
+    description: 'Complete Timer Mode with 50% or more time remaining',
+    icon: '⚡',
+    category: 'time_attack',
+    condition: (data) => {
+      if (!data.timerMode || !data.timeRemaining || !data.totalTime) return false;
+      return data.timeRemaining >= data.totalTime * 0.5;
+    }
+  },
+  LAST_SECOND_HERO: {
+    id: 'last_second_hero',
+    name: 'Last Second Hero',
+    description: 'Complete Timer Mode with less than 10 seconds remaining',
+    icon: '😰',
+    category: 'time_attack',
+    condition: (data) => {
+      if (!data.timerMode || !data.timeRemaining) return false;
+      return data.timeRemaining > 0 && data.timeRemaining <= 10;
+    }
+  },
+  TIME_ATTACK_MASTER: {
+    id: 'time_attack_master',
+    name: 'Time Attack Master',
+    description: 'Complete Master difficulty in Timer Mode',
+    icon: '⏰',
+    category: 'time_attack',
+    condition: (data) => data.timerMode && data.difficulty === 'master' && (data.timeRemaining ?? 0) > 0
+  },
+  CLOCK_BEATER: {
+    id: 'clock_beater',
+    name: 'Clock Beater',
+    description: 'Complete 10 games in Timer Mode',
+    icon: '🕐',
+    category: 'time_attack',
+    condition: (data) => {
+      // This will be checked via a separate counter in the points store
+      return false; // Handled separately
+    }
   }
 };

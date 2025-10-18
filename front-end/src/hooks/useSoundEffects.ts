@@ -11,7 +11,10 @@ export type SoundEffect =
   | 'achievement_unlock'
   | 'level_unlock'
   | 'button_click'
-  | 'difficulty_select';
+  | 'difficulty_select'
+  | 'timer_warning'
+  | 'timer_critical'
+  | 'time_up';
 
 // Sound configuration with paths and volumes
 const SOUND_CONFIG: Record<SoundEffect, { path: string; volume: number }> = {
@@ -23,6 +26,9 @@ const SOUND_CONFIG: Record<SoundEffect, { path: string; volume: number }> = {
   level_unlock: { path: '/sounds/level-unlock.mp3', volume: 0.5 },
   button_click: { path: '/sounds/button-click.mp3', volume: 0.2 },
   difficulty_select: { path: '/sounds/difficulty-select.mp3', volume: 0.3 },
+  timer_warning: { path: '/sounds/card-mismatch.mp3', volume: 0.3 },
+  timer_critical: { path: '/sounds/card-mismatch.mp3', volume: 0.4 },
+  time_up: { path: '/sounds/card-mismatch.mp3', volume: 0.5 },
 };
 
 interface UseSoundEffectsOptions {

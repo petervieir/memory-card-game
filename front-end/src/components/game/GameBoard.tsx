@@ -3,9 +3,11 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Card } from './Card';
 import { DifficultySelector } from './DifficultySelector';
+import { Timer } from './Timer';
 import { usePointsStore } from '@/stores/usePointsStore';
 import { useDifficultyStore } from '@/stores/useDifficultyStore';
 import { useAudioStore } from '@/stores/useAudioStore';
+import { useTimerStore } from '@/stores/useTimerStore';
 import { useSoundEffects, useBackgroundMusic } from '@/hooks/useSoundEffects';
 import { submitScore } from '@/lib/tx';
 import toast from 'react-hot-toast';
@@ -146,6 +148,10 @@ export function GameBoard() {
   const [currentCombo, setCurrentCombo] = useState(0);
   const [highestCombo, setHighestCombo] = useState(0);
   const [showComboEffect, setShowComboEffect] = useState(false);
+  const [isTimerActive, setIsTimerActive] = useState(false);
+  const [timeRemaining, setTimeRemaining] = useState(0);
+  const [isTimeUp, setIsTimeUp] = useState(false);
+  const lastWarningSecondRef = useRef<number>(-1);
   const { addPoints, incrementGamesPlayed, checkAndUnlockAchievements, setWalletAddress: setPointsWalletAddress, spendPoints, points } = usePointsStore();
   const { images, loading, selectImagesFromPool, imagePool } = useImages();
   const { address } = useWallet();
@@ -155,6 +161,7 @@ export function GameBoard() {
     isUnlocked: isDifficultyUnlocked, 
     getUnlockedDifficulties 
   } = useDifficultyStore();
+  const { timerEnabled } = useTimerStore();
   
   // Audio hooks
   const { soundEffectsEnabled, soundEffectsVolume, musicEnabled, musicVolume } = useAudioStore();
@@ -203,7 +210,17 @@ export function GameBoard() {
     setCurrentCombo(0);
     setHighestCombo(0);
     setShowComboEffect(false);
-  }, [images, address, selectImagesFromPool, currentDifficulty.pairs]);
+    setIsTimeUp(false);
+    setTimeRemaining(currentDifficulty.timerSeconds);
+    lastWarningSecondRef.current = -1;
+    
+    // Start timer if enabled
+    if (timerEnabled) {
+      setIsTimerActive(true);
+    } else {
+      setIsTimerActive(false);
+    }
+  }, [images, address, selectImagesFromPool, currentDifficulty.pairs, currentDifficulty.timerSeconds, timerEnabled]);
 
   // Initialize game when images are loaded and wallet is connected
   useEffect(() => {
@@ -316,30 +333,76 @@ export function GameBoard() {
     }
   }, [address, setWalletAddress, setPointsWalletAddress]);
 
+  // Handle timer tick
+  const handleTimerTick = useCallback((secondsRemaining: number) => {
+    setTimeRemaining(secondsRemaining);
+    
+    // Play warning sounds at specific thresholds (only once per threshold)
+    if (secondsRemaining === 20 && lastWarningSecondRef.current !== 20) {
+      play_sound('timer_warning');
+      lastWarningSecondRef.current = 20;
+    } else if (secondsRemaining === 10 && lastWarningSecondRef.current !== 10) {
+      play_sound('timer_critical');
+      lastWarningSecondRef.current = 10;
+      toast.error('⏰ 10 seconds left!', { duration: 2000, id: 'timer-warning' });
+    }
+  }, [play_sound]);
+
+  // Handle time up
+  const handleTimeUp = useCallback(() => {
+    setIsTimerActive(false);
+    setIsTimeUp(true);
+    play_sound('time_up');
+    toast.error('⏰ Time\'s up! Game over!', { 
+      duration: 4000, 
+      id: 'time-up',
+      icon: '⏰'
+    });
+    
+    // Show final state but don't award points
+    setTimeout(() => {
+      setShowDifficultySelector(true);
+      setCards([]);
+    }, 3000);
+  }, [play_sound]);
+
   // Check if game is complete
   useEffect(() => {
     if (cards.length > 0 && cards.every(c => c.isMatched) && address && !hasAwardedRef.current) {
       hasAwardedRef.current = true;
+      
+      // Stop timer if active
+      if (isTimerActive) {
+        setIsTimerActive(false);
+      }
+      
       const basePoints = currentDifficulty.basePoints;
       const efficiency_bonus = Math.max(0, currentDifficulty.maxMovesForBonus - moves) * 5;
       
+      // Calculate time bonus (only in timer mode)
+      let timeBonus = 0;
+      if (timerEnabled && timeRemaining > 0) {
+        // Award 2 points per second remaining
+        timeBonus = Math.round(timeRemaining * 2);
+      }
+      
       // Calculate combo bonus multiplier
-      let comboMultiplier = 1.0;
+      let comboMultiplier = 1;
       if (highestCombo >= 10) {
-        comboMultiplier = 2.0;
+        comboMultiplier = 2;
       } else if (highestCombo >= 5) {
         comboMultiplier = 1.5;
       } else if (highestCombo >= 3) {
         comboMultiplier = 1.2;
       }
       
-      const rawScore = basePoints + efficiency_bonus;
+      const rawScore = basePoints + efficiency_bonus + timeBonus;
       const scoreWithCombo = Math.round(rawScore * comboMultiplier);
       const finalScore = Math.round(scoreWithCombo * currentDifficulty.multiplier);
 
       // Update stores first
       addPoints(finalScore);
-      const newGamesPlayed = incrementGamesPlayed();
+      const newGamesPlayed = incrementGamesPlayed(timerEnabled);
       completeLevel(selectedDifficulty, finalScore, moves);
 
       // Prepare achievement data AFTER updating stores
@@ -351,7 +414,10 @@ export function GameBoard() {
         gamesPlayed: newGamesPlayed, // Use the actual updated value
         isPerfectGame: moves <= currentDifficulty.maxMovesForBonus,
         hintsUsed,
-        highestCombo
+        highestCombo,
+        timerMode: timerEnabled,
+        timeRemaining: timerEnabled ? timeRemaining : undefined,
+        totalTime: timerEnabled ? currentDifficulty.timerSeconds : undefined
       };
 
       // Check for achievements AFTER updating stores
@@ -395,7 +461,7 @@ export function GameBoard() {
           toast.error('Could not submit score on-chain');
         });
     }
-  }, [cards, moves, addPoints, incrementGamesPlayed, address, currentDifficulty, selectedDifficulty, completeLevel, getUnlockedDifficulties, checkAndUnlockAchievements, play_sound, hintsUsed, highestCombo]);
+  }, [cards, moves, addPoints, incrementGamesPlayed, address, currentDifficulty, selectedDifficulty, completeLevel, getUnlockedDifficulties, checkAndUnlockAchievements, play_sound, hintsUsed, highestCombo, timerEnabled, timeRemaining, isTimerActive]);
 
   const useHint = useCallback(() => {
     // Check if hint is available
@@ -474,7 +540,7 @@ export function GameBoard() {
   }, [cards, hintsUsed, currentDifficulty.maxHints, points, spendPoints, play_sound, isHintActive]);
 
   const handleCardClick = (cardId: number) => {
-    if (flippedCards.length >= 2 || !address || isHintActive) return;
+    if (flippedCards.length >= 2 || !address || isHintActive || isTimeUp) return;
     
     // Find the card being clicked
     const clickedCard = cards.find(card => card.id === cardId);
@@ -527,6 +593,9 @@ export function GameBoard() {
     setCurrentCombo(0);
     setHighestCombo(0);
     setShowComboEffect(false);
+    setIsTimerActive(false);
+    setIsTimeUp(false);
+    setTimeRemaining(0);
     // Fade out music when returning to difficulty selector
     if (musicEnabled) {
       fade_out();
@@ -593,6 +662,7 @@ export function GameBoard() {
           <DifficultySelector
             selectedDifficulty={selectedDifficulty}
             onDifficultyChange={handleDifficultyChange}
+            onTimerToggle={() => play_sound('button_click')}
           />
           <div className="text-center mt-6">
             <button
@@ -612,7 +682,7 @@ export function GameBoard() {
           <div className="flex justify-between items-center mb-6 p-4 bg-white/10 backdrop-blur-sm rounded-lg">
             <div className="flex flex-col gap-1">
               <span className="text-sm font-medium">
-                {currentDifficulty.emoji} {currentDifficulty.name} - {moves} moves
+                {currentDifficulty.emoji} {currentDifficulty.name} {timerEnabled && '⏱️'} - {moves} moves
               </span>
               <div className="flex items-center gap-2">
                 <span className="text-xs text-gray-400">
@@ -636,6 +706,15 @@ export function GameBoard() {
               </div>
             </div>
             <div className="flex gap-2 items-center">
+              {/* Timer Display */}
+              {timerEnabled && !isGameComplete && (
+                <Timer
+                  initialSeconds={currentDifficulty.timerSeconds}
+                  isActive={isTimerActive && !isGameComplete}
+                  onTimeUp={handleTimeUp}
+                  onTick={handleTimerTick}
+                />
+              )}
               <button
                 onClick={useHint}
                 disabled={isGameComplete || hintsUsed >= currentDifficulty.maxHints || points < 50 || isHintActive}
@@ -666,19 +745,35 @@ export function GameBoard() {
                 Points earned: {(() => {
                   const basePoints = currentDifficulty.basePoints;
                   const efficiencyBonus = Math.max(0, currentDifficulty.maxMovesForBonus - moves) * 5;
-                  let comboMult = 1.0;
-                  if (highestCombo >= 10) comboMult = 2.0;
+                  const timeBonus = timerEnabled && timeRemaining > 0 ? Math.round(timeRemaining * 2) : 0;
+                  let comboMult = 1;
+                  if (highestCombo >= 10) comboMult = 2;
                   else if (highestCombo >= 5) comboMult = 1.5;
                   else if (highestCombo >= 3) comboMult = 1.2;
-                  return Math.round((basePoints + efficiencyBonus) * comboMult * currentDifficulty.multiplier);
+                  return Math.round((basePoints + efficiencyBonus + timeBonus) * comboMult * currentDifficulty.multiplier);
                 })()}
               </p>
               <p className="text-xs text-gray-400 mt-2">
                 Difficulty: {currentDifficulty.name} ({currentDifficulty.multiplier}x multiplier)
+                {timerEnabled && timeRemaining > 0 && ` • Time Bonus: ${Math.round(timeRemaining * 2)} pts (${timeRemaining}s left)`}
                 {highestCombo > 0 && ` • Best Combo: ${highestCombo}x`}
                 {highestCombo >= 10 && ' 🔥🔥🔥'}
                 {highestCombo >= 5 && highestCombo < 10 && ' 🔥🔥'}
                 {highestCombo >= 3 && highestCombo < 5 && ' 🔥'}
+              </p>
+            </div>
+          )}
+          
+          {/* Time Up Message */}
+          {isTimeUp && !isGameComplete && (
+            <div className="mb-6 p-4 bg-red-500/20 border border-red-500 rounded-lg text-center">
+              <h3 className="font-bold text-red-400 mb-2">⏰ Time's Up!</h3>
+              <p className="text-sm">
+                You ran out of time!<br/>
+                No points awarded this round.
+              </p>
+              <p className="text-xs text-gray-400 mt-2">
+                Completed {cards.filter(c => c.isMatched).length / 2} out of {currentDifficulty.pairs} pairs
               </p>
             </div>
           )}
