@@ -8,12 +8,14 @@ interface WalletStats {
   totalEarned: number;
   gamesPlayed: number;
   unlockedAchievements: string[];
+  timerModeGamesPlayed: number;
 }
 
 interface PointsState {
   points: number;
   totalEarned: number;
   gamesPlayed: number;
+  timerModeGamesPlayed: number;
   walletAddress: string | null;
   walletStats: Record<string, WalletStats>;
   unlockedAchievements: string[];
@@ -21,7 +23,7 @@ interface PointsState {
   addPoints: (amount: number) => void;
   spendPoints: (amount: number) => boolean;
   resetPoints: () => void;
-  incrementGamesPlayed: () => number;
+  incrementGamesPlayed: (isTimerMode?: boolean) => number;
   setWalletAddress: (address: string | null) => void;
   checkAndUnlockAchievements: (gameData: GameCompletionData) => string[];
   clearNewlyUnlockedAchievements: () => void;
@@ -34,6 +36,7 @@ export const usePointsStore = create<PointsState>()(
       points: 0,
       totalEarned: 0,
       gamesPlayed: 0,
+      timerModeGamesPlayed: 0,
       walletAddress: null,
       walletStats: {},
       unlockedAchievements: [],
@@ -58,6 +61,7 @@ export const usePointsStore = create<PointsState>()(
                 totalEarned: newTotalEarned,
                 gamesPlayed: state.gamesPlayed,
                 unlockedAchievements: state.unlockedAchievements,
+                timerModeGamesPlayed: state.timerModeGamesPlayed,
               }
             }
           };
@@ -92,6 +96,7 @@ export const usePointsStore = create<PointsState>()(
             points: 0,
             totalEarned: 0,
             gamesPlayed: 0,
+            timerModeGamesPlayed: 0,
             walletStats: {
               ...state.walletStats,
               [walletAddress]: {
@@ -99,13 +104,14 @@ export const usePointsStore = create<PointsState>()(
                 totalEarned: 0,
                 gamesPlayed: 0,
                 unlockedAchievements: [],
+                timerModeGamesPlayed: 0,
               }
             }
           }));
         }
       },
       
-      incrementGamesPlayed: () => {
+      incrementGamesPlayed: (isTimerMode = false) => {
         const { walletAddress } = get();
         
         if (!walletAddress) return 0;
@@ -113,14 +119,17 @@ export const usePointsStore = create<PointsState>()(
         let newGamesPlayed = 0;
         set((state) => {
           newGamesPlayed = state.gamesPlayed + 1;
+          const newTimerModeGamesPlayed = isTimerMode ? state.timerModeGamesPlayed + 1 : state.timerModeGamesPlayed;
           
           return {
             gamesPlayed: newGamesPlayed,
+            timerModeGamesPlayed: newTimerModeGamesPlayed,
             walletStats: {
               ...state.walletStats,
               [walletAddress]: {
                 ...state.walletStats[walletAddress],
                 gamesPlayed: newGamesPlayed,
+                timerModeGamesPlayed: newTimerModeGamesPlayed,
               }
             }
           };
@@ -138,6 +147,7 @@ export const usePointsStore = create<PointsState>()(
             points: 0,
             totalEarned: 0,
             gamesPlayed: 0,
+            timerModeGamesPlayed: 0,
             unlockedAchievements: [],
             newlyUnlockedAchievements: []
           });
@@ -155,6 +165,7 @@ export const usePointsStore = create<PointsState>()(
           totalEarned: 0,
           gamesPlayed: 0,
           unlockedAchievements: [],
+          timerModeGamesPlayed: 0,
         };
         
         set({ 
@@ -162,13 +173,14 @@ export const usePointsStore = create<PointsState>()(
           points: stats.points,
           totalEarned: stats.totalEarned,
           gamesPlayed: stats.gamesPlayed,
+          timerModeGamesPlayed: stats.timerModeGamesPlayed || 0,
           unlockedAchievements: stats.unlockedAchievements,
           newlyUnlockedAchievements: []
         });
       },
 
       checkAndUnlockAchievements: (gameData: GameCompletionData) => {
-        const { walletAddress, unlockedAchievements } = get();
+        const { walletAddress, unlockedAchievements, timerModeGamesPlayed } = get();
         if (!walletAddress) return [];
 
         const currentUnlocked = unlockedAchievements || [];
@@ -177,7 +189,14 @@ export const usePointsStore = create<PointsState>()(
         // Check each achievement
         Object.values(ACHIEVEMENTS).forEach((achievement) => {
           const isAlreadyUnlocked = currentUnlocked.includes(achievement.id);
-          const conditionMet = achievement.condition(gameData);
+          
+          // Special handling for CLOCK_BEATER achievement
+          let conditionMet = false;
+          if (achievement.id === 'clock_beater') {
+            conditionMet = timerModeGamesPlayed >= 10;
+          } else {
+            conditionMet = achievement.condition(gameData);
+          }
           
           if (!isAlreadyUnlocked && conditionMet) {
             newlyUnlocked.push(achievement.id);
@@ -193,7 +212,7 @@ export const usePointsStore = create<PointsState>()(
               walletStats: {
                 ...state.walletStats,
                 [walletAddress]: {
-                  ...(state.walletStats[walletAddress] || { points: state.points, totalEarned: state.totalEarned, gamesPlayed: state.gamesPlayed, unlockedAchievements: [] }),
+                  ...(state.walletStats[walletAddress] || { points: state.points, totalEarned: state.totalEarned, gamesPlayed: state.gamesPlayed, unlockedAchievements: [], timerModeGamesPlayed: state.timerModeGamesPlayed }),
                   unlockedAchievements: updatedUnlocked,
                 }
               }
@@ -211,15 +230,15 @@ export const usePointsStore = create<PointsState>()(
       getAchievementProgress: () => {
         const { unlockedAchievements } = get();
         const totalAchievements = Object.keys(ACHIEVEMENTS).length;
-        const categories = { moves: 0, difficulty: 0, milestone: 0, special: 0 };
+        const categories = { moves: 0, difficulty: 0, milestone: 0, special: 0, time_attack: 0 };
         
         // Handle case where unlockedAchievements is undefined (during hydration)
         const achievements = unlockedAchievements || [];
         
         achievements.forEach((id) => {
           const achievement = Object.values(ACHIEVEMENTS).find(a => a.id === id);
-          if (achievement) {
-            categories[achievement.category]++;
+          if (achievement && achievement.category in categories) {
+            categories[achievement.category as keyof typeof categories]++;
           }
         });
 

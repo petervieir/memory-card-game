@@ -2,11 +2,13 @@
 
 import { DIFFICULTIES, DIFFICULTY_ORDER, type DifficultyId } from '@/types/game';
 import { useDifficultyStore } from '@/stores/useDifficultyStore';
+import { useTimerStore } from '@/stores/useTimerStore';
 
 interface DifficultySelectorProps {
   readonly selectedDifficulty: DifficultyId;
   readonly onDifficultyChange: (difficulty: DifficultyId) => void;
   readonly className?: string;
+  readonly onTimerToggle?: () => void;
 }
 
 function getButtonClassName(unlocked: boolean, isSelected: boolean): string {
@@ -22,13 +24,44 @@ function getButtonClassName(unlocked: boolean, isSelected: boolean): string {
 export function DifficultySelector({ 
   selectedDifficulty, 
   onDifficultyChange, 
-  className = '' 
+  className = '',
+  onTimerToggle
 }: DifficultySelectorProps) {
   const { isUnlocked, hasCompletedLevel, getBestScore } = useDifficultyStore();
+  const { timerEnabled, toggle_timer } = useTimerStore();
+  
+  const handleTimerToggle = () => {
+    toggle_timer();
+    if (onTimerToggle) {
+      onTimerToggle();
+    }
+  };
 
   return (
     <div className={`space-y-4 ${className}`}>
       <h3 className="text-lg font-semibold text-center">Choose Difficulty</h3>
+      
+      {/* Timer Mode Toggle */}
+      <div className="flex items-center justify-center gap-3 p-3 bg-white/5 rounded-lg border border-gray-600">
+        <button
+          onClick={handleTimerToggle}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
+            timerEnabled
+              ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-lg'
+              : 'bg-gray-700 hover:bg-gray-600 text-gray-300'
+          }`}
+        >
+          <span className="text-xl">⏱️</span>
+          <span>Timer Mode</span>
+        </button>
+        <div className="text-sm text-gray-400 max-w-xs">
+          {timerEnabled ? (
+            <span>⚡ Time Attack! Complete before time runs out for bonus points</span>
+          ) : (
+            <span>🎯 Classic mode - take your time to find all matches</span>
+          )}
+        </div>
+      </div>
       
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
         {DIFFICULTY_ORDER.map((difficultyId) => {
@@ -84,14 +117,14 @@ export function DifficultySelector({
       
       <div className="text-center p-3 bg-white/5 rounded-lg">
         <p className="text-sm text-gray-300">
-          {!isUnlocked(selectedDifficulty) ? (
+          {isUnlocked(selectedDifficulty) ? (
+            DIFFICULTIES[selectedDifficulty].description
+          ) : (
             (() => {
               const currentIndex = DIFFICULTY_ORDER.indexOf(selectedDifficulty as any);
               const previousDifficulty = DIFFICULTY_ORDER[currentIndex - 1] as DifficultyId;
               return `🔒 Complete ${DIFFICULTIES[previousDifficulty]?.name} to unlock ${DIFFICULTIES[selectedDifficulty].name}`;
             })()
-          ) : (
-            DIFFICULTIES[selectedDifficulty].description
           )}
         </p>
       </div>
