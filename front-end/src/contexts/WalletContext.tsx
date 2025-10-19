@@ -7,6 +7,7 @@ import React, {
   useCallback,
 } from "react";
 import { AppConfig, UserSession } from "@stacks/auth";
+import { useXPStore } from "@/stores/useXPStore";
 
 const appConfig = new AppConfig(["store_write"]);
 
@@ -68,6 +69,18 @@ export const WalletProvider = ({ children }: { children: React.ReactNode }) => {
       setAddress(null);
     }
   }, [isClient]);
+  
+  // Check daily login when wallet is connected
+  useEffect(() => {
+    if (address && isClient) {
+      // Access the store directly inside the effect to avoid hydration issues
+      const checkDailyLogin = () => {
+        const store = useXPStore.getState();
+        store.check_daily_login();
+      };
+      checkDailyLogin();
+    }
+  }, [address, isClient]);
 
   // Keep address in sync across tabs and wallet state changes
   useEffect(() => {

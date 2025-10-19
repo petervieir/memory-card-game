@@ -167,6 +167,70 @@ export interface ChallengeStreak {
   totalChallengesCompleted: number;
 }
 
+// XP & Level System
+export interface PlayerLevel {
+  level: number;
+  currentXP: number;
+  xpToNextLevel: number;
+  totalXP: number;
+}
+
+export interface XPSource {
+  type: 'game_completion' | 'achievement' | 'daily_login' | 'daily_challenge' | 'perfect_game' | 'combo_bonus';
+  amount: number;
+  description: string;
+}
+
+export interface Unlockable {
+  id: string;
+  type: 'cosmetic' | 'title' | 'border' | 'card_back';
+  name: string;
+  description: string;
+  levelRequired: number;
+  icon?: string;
+  preview?: string;
+}
+
+export interface PlayerTitle {
+  id: string;
+  name: string;
+  description: string;
+  levelRequired: number;
+  color?: string;
+}
+
+export interface LevelUpReward {
+  level: number;
+  unlockables: string[]; // IDs of unlockables
+  title?: string; // Title ID
+  specialReward?: string;
+}
+
+// XP calculation constants
+export const XP_CONFIG = {
+  BASE_GAME_XP: 50,
+  ACHIEVEMENT_XP: 100,
+  DAILY_LOGIN_XP: 25,
+  DAILY_CHALLENGE_XP: 150,
+  PERFECT_GAME_BONUS: 50,
+  COMBO_XP_MULTIPLIER: 5, // XP per combo point above 5
+  DIFFICULTY_MULTIPLIERS: {
+    beginner: 1,
+    easy: 1.2,
+    medium: 1.5,
+    hard: 1.8,
+    expert: 2.2,
+    master: 2.5
+  } as Record<DifficultyId, number>
+} as const;
+
+// Level progression curve - exponential growth
+export function calculate_xp_for_level(level: number): number {
+  // Formula: base * (level^1.5)
+  const BASE_XP = 100;
+  return Math.floor(BASE_XP * Math.pow(level, 1.5));
+}
+
 export const ACHIEVEMENTS: Record<string, Achievement> = {
   FIRST_VICTORY: {
     id: 'first_victory',
@@ -379,5 +443,198 @@ export const ACHIEVEMENTS: Record<string, Achievement> = {
     icon: '✨',
     category: 'special',
     condition: () => false // Handled in daily challenge store
+  },
+  // Level Milestone Achievements
+  LEVEL_5: {
+    id: 'level_5',
+    name: 'Rising Star',
+    description: 'Reach Level 5',
+    icon: '⭐',
+    category: 'milestone',
+    condition: () => false // Handled in XP store
+  },
+  LEVEL_10: {
+    id: 'level_10',
+    name: 'Dedicated Player',
+    description: 'Reach Level 10',
+    icon: '🌟',
+    category: 'milestone',
+    condition: () => false // Handled in XP store
+  },
+  LEVEL_25: {
+    id: 'level_25',
+    name: 'Memory Expert',
+    description: 'Reach Level 25',
+    icon: '💫',
+    category: 'milestone',
+    condition: () => false // Handled in XP store
+  },
+  LEVEL_50: {
+    id: 'level_50',
+    name: 'Memory Legend',
+    description: 'Reach Level 50',
+    icon: '✨',
+    category: 'milestone',
+    condition: () => false // Handled in XP store
+  },
+  LEVEL_75: {
+    id: 'level_75',
+    name: 'Memory Master',
+    description: 'Reach Level 75',
+    icon: '🌠',
+    category: 'milestone',
+    condition: () => false // Handled in XP store
+  },
+  LEVEL_100: {
+    id: 'level_100',
+    name: 'Immortal Memory',
+    description: 'Reach Level 100',
+    icon: '👑',
+    category: 'milestone',
+    condition: () => false // Handled in XP store
   }
+};
+
+// Player Titles
+export const PLAYER_TITLES: Record<string, PlayerTitle> = {
+  NOVICE: {
+    id: 'novice',
+    name: 'Novice',
+    description: 'Default title for new players',
+    levelRequired: 1,
+    color: '#9ca3af'
+  },
+  APPRENTICE: {
+    id: 'apprentice',
+    name: 'Apprentice',
+    description: 'Learning the ropes',
+    levelRequired: 5,
+    color: '#60a5fa'
+  },
+  ADEPT: {
+    id: 'adept',
+    name: 'Adept',
+    description: 'Skilled memory player',
+    levelRequired: 10,
+    color: '#34d399'
+  },
+  EXPERT: {
+    id: 'expert',
+    name: 'Expert',
+    description: 'Master of memory',
+    levelRequired: 25,
+    color: '#a78bfa'
+  },
+  MASTER: {
+    id: 'master',
+    name: 'Memory Master',
+    description: 'Elite memory champion',
+    levelRequired: 50,
+    color: '#f59e0b'
+  },
+  GRANDMASTER: {
+    id: 'grandmaster',
+    name: 'Grandmaster',
+    description: 'Legendary status',
+    levelRequired: 75,
+    color: '#ef4444'
+  },
+  IMMORTAL: {
+    id: 'immortal',
+    name: 'Immortal',
+    description: 'Peak performance',
+    levelRequired: 100,
+    color: '#ec4899'
+  }
+};
+
+// Unlockables
+export const UNLOCKABLES: Record<string, Unlockable> = {
+  BLUE_BORDER: {
+    id: 'blue_border',
+    type: 'border',
+    name: 'Blue Border',
+    description: 'A cool blue card border',
+    levelRequired: 5,
+    icon: '🔵'
+  },
+  GREEN_BORDER: {
+    id: 'green_border',
+    type: 'border',
+    name: 'Green Border',
+    description: 'An energetic green card border',
+    levelRequired: 10,
+    icon: '🟢'
+  },
+  PURPLE_BORDER: {
+    id: 'purple_border',
+    type: 'border',
+    name: 'Purple Border',
+    description: 'A majestic purple card border',
+    levelRequired: 20,
+    icon: '🟣'
+  },
+  GOLD_BORDER: {
+    id: 'gold_border',
+    type: 'border',
+    name: 'Gold Border',
+    description: 'A prestigious gold card border',
+    levelRequired: 30,
+    icon: '🟡'
+  },
+  RAINBOW_BORDER: {
+    id: 'rainbow_border',
+    type: 'border',
+    name: 'Rainbow Border',
+    description: 'A dazzling rainbow card border',
+    levelRequired: 50,
+    icon: '🌈'
+  },
+  GALAXY_BACK: {
+    id: 'galaxy_back',
+    type: 'card_back',
+    name: 'Galaxy Card Back',
+    description: 'Cosmic design for your cards',
+    levelRequired: 15,
+    icon: '🌌'
+  },
+  FIRE_BACK: {
+    id: 'fire_back',
+    type: 'card_back',
+    name: 'Fire Card Back',
+    description: 'Blazing hot card design',
+    levelRequired: 25,
+    icon: '🔥'
+  },
+  ICE_BACK: {
+    id: 'ice_back',
+    type: 'card_back',
+    name: 'Ice Card Back',
+    description: 'Cool and frosty card design',
+    levelRequired: 35,
+    icon: '❄️'
+  },
+  DIAMOND_BACK: {
+    id: 'diamond_back',
+    type: 'card_back',
+    name: 'Diamond Card Back',
+    description: 'Luxurious diamond-studded design',
+    levelRequired: 60,
+    icon: '💎'
+  }
+};
+
+// Level up rewards mapping
+export const LEVEL_REWARDS: Record<number, LevelUpReward> = {
+  5: { level: 5, unlockables: ['blue_border'], title: 'apprentice' },
+  10: { level: 10, unlockables: ['green_border'], title: 'adept' },
+  15: { level: 15, unlockables: ['galaxy_back'] },
+  20: { level: 20, unlockables: ['purple_border'] },
+  25: { level: 25, unlockables: ['fire_back'], title: 'expert' },
+  30: { level: 30, unlockables: ['gold_border'] },
+  35: { level: 35, unlockables: ['ice_back'] },
+  50: { level: 50, unlockables: ['rainbow_border'], title: 'master', specialReward: 'Special Badge: Memory Legend' },
+  60: { level: 60, unlockables: ['diamond_back'] },
+  75: { level: 75, title: 'grandmaster', specialReward: 'Special Badge: Memory Master' },
+  100: { level: 100, title: 'immortal', specialReward: 'Special Badge: Immortal Memory' }
 };

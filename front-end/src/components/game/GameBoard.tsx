@@ -11,13 +11,15 @@ import { useAudioStore } from '@/stores/useAudioStore';
 import { useTimerStore } from '@/stores/useTimerStore';
 import { useStatsStore } from '@/stores/useStatsStore';
 import { useDailyChallengeStore } from '@/stores/useDailyChallengeStore';
+import { useXPStore } from '@/stores/useXPStore';
 import { useSoundEffects, useBackgroundMusic } from '@/hooks/useSoundEffects';
 import { submitScore } from '@/lib/tx';
 import toast from 'react-hot-toast';
 import { useWallet } from '@/contexts/WalletContext';
 import { useCardSize } from '@/hooks/useCardSize';
-import { DIFFICULTIES, DIFFICULTY_ORDER, type DifficultyId, type GameCompletionData } from '@/types/game';
+import { DIFFICULTIES, DIFFICULTY_ORDER, type DifficultyId, type GameCompletionData, XP_CONFIG } from '@/types/game';
 import { AchievementNotification } from './AchievementBadge';
+import { LevelUpModal } from './LevelUpModal';
 
 
 // Image pool management
@@ -175,6 +177,7 @@ export function GameBoard() {
   const [isTimeUp, setIsTimeUp] = useState(false);
   const lastWarningSecondRef = useRef<number>(-1);
   const { addPoints, incrementGamesPlayed, checkAndUnlockAchievements, setWalletAddress: setPointsWalletAddress, spendPoints, points } = usePointsStore();
+  const { addXP, calculate_game_xp, setWalletAddress: setXPWalletAddress } = useXPStore();
   const { images, loading, selectImagesFromPool, imagePool } = useImages();
   const { address } = useWallet();
   const { 
@@ -381,6 +384,7 @@ export function GameBoard() {
     setPointsWalletAddress(address);
     setStatsWalletAddress(address);
     setDailyChallengeWalletAddress(address);
+    setXPWalletAddress(address);
     
     if (!address) {
       setCards([]);
@@ -494,6 +498,44 @@ export function GameBoard() {
       // Check for achievements AFTER updating stores
       let newAchievements = checkAndUnlockAchievements(gameData);
       
+      // Award XP for game completion
+      const gameXP = calculate_game_xp({
+        difficulty: selectedDifficulty,
+        isPerfectGame: moves <= currentDifficulty.maxMovesForBonus,
+        combo: highestCombo
+      });
+      
+      const xpResult = addXP({
+        type: 'game_completion',
+        amount: gameXP,
+        description: `Completed ${currentDifficulty.name} difficulty`
+      });
+      
+      // Award bonus XP for achievements
+      if (newAchievements.length > 0) {
+        for (const _ of newAchievements) {
+          addXP({
+            type: 'achievement',
+            amount: XP_CONFIG.ACHIEVEMENT_XP,
+            description: 'Achievement unlocked'
+          });
+        }
+      }
+      
+      // Show XP gain notification
+      toast.success(`+${gameXP} XP earned!`, {
+        duration: 3000,
+        id: 'xp-gain',
+        icon: '⭐'
+      });
+      
+      if (xpResult.leveledUp) {
+        toast.success(`🎉 Level Up! Now Level ${xpResult.newLevel}!`, {
+          duration: 4000,
+          id: 'level-up'
+        });
+      }
+      
       // Handle daily challenge completion
       if (isDailyChallenge && challengeId) {
         const challenge = getTodayChallenge();
@@ -532,6 +574,13 @@ export function GameBoard() {
         // Complete the challenge
         const challengeAchievements = completeChallenge(challengeId, moves, finalScore + (conditionMet ? challenge.bonusPoints : 0), conditionMet);
         newAchievements = [...newAchievements, ...challengeAchievements];
+        
+        // Award daily challenge XP
+        addXP({
+          type: 'daily_challenge',
+          amount: XP_CONFIG.DAILY_CHALLENGE_XP,
+          description: 'Daily Challenge completed'
+        });
         
         // Show challenge completion message
         toast.success(conditionMet ? '✨ Daily Challenge Completed Perfectly!' : '✓ Daily Challenge Completed!', {
@@ -779,6 +828,9 @@ export function GameBoard() {
 
   return (
     <div className="w-full mx-auto px-4">
+      {/* Level Up Modal */}
+      <LevelUpModal />
+      
       {/* Achievement Notification */}
       {showAchievementNotification && (
         <AchievementNotification
