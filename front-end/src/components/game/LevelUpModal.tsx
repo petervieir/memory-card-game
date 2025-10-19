@@ -5,6 +5,10 @@ import { useXPStore } from '@/stores/useXPStore';
 import { UNLOCKABLES, PLAYER_TITLES } from '@/types/game';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 
+/**
+ * Modal displayed when player levels up
+ * Shows new level, rewards, and unlocked items
+ */
 export function LevelUpModal() {
   const { levelUpNotifications, clearLevelUpNotifications } = useXPStore();
   const [currentNotification, setCurrentNotification] = useState<typeof levelUpNotifications[0] | null>(null);
