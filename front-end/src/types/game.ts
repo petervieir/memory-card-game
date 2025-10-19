@@ -201,7 +201,7 @@ export interface PlayerTitle {
 
 export interface LevelUpReward {
   level: number;
-  unlockables: string[]; // IDs of unlockables
+  unlockables?: string[]; // IDs of unlockables
   title?: string; // Title ID
   specialReward?: string;
 }
