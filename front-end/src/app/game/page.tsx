@@ -14,7 +14,7 @@ export default function GamePage() {
     <main className="min-h-screen bg-gradient-to-br from-background to-secondary/20">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
-        <div className="text-center mb-8">
+          <div className="text-center mb-8">
           <div className="flex justify-between items-start mb-4">
             <div className="flex gap-4">
               <Link 
@@ -22,6 +22,12 @@ export default function GamePage() {
                 className="inline-block text-sm text-blue-400 hover:text-blue-300"
               >
                 ← Back to Home
+              </Link>
+              <Link 
+                href="/challenges" 
+                className="inline-block text-sm text-purple-400 hover:text-purple-300"
+              >
+                📅 Daily Challenges
               </Link>
               <Link 
                 href="/stats" 
