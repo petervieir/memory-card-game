@@ -8,20 +8,20 @@ import { useSoundEffects } from '@/hooks/useSoundEffects';
 export function LevelUpModal() {
   const { levelUpNotifications, clearLevelUpNotifications } = useXPStore();
   const [currentNotification, setCurrentNotification] = useState<typeof levelUpNotifications[0] | null>(null);
-  const { playLevelUnlock } = useSoundEffects();
+  const { play_sound } = useSoundEffects();
 
   useEffect(() => {
     if (levelUpNotifications.length > 0 && !currentNotification) {
       setCurrentNotification(levelUpNotifications[0]);
-      playLevelUnlock();
+      play_sound('level_unlock');
     }
-  }, [levelUpNotifications, currentNotification, playLevelUnlock]);
+  }, [levelUpNotifications, currentNotification, play_sound]);
 
   function handleClose() {
     const remaining = levelUpNotifications.slice(1);
     if (remaining.length > 0) {
       setCurrentNotification(remaining[0]);
-      playLevelUnlock();
+      play_sound('level_unlock');
     } else {
       setCurrentNotification(null);
       clearLevelUpNotifications();
