@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Card } from './Card';
 import { DifficultySelector } from './DifficultySelector';
 import { Timer } from './Timer';
@@ -9,6 +10,7 @@ import { useDifficultyStore } from '@/stores/useDifficultyStore';
 import { useAudioStore } from '@/stores/useAudioStore';
 import { useTimerStore } from '@/stores/useTimerStore';
 import { useStatsStore } from '@/stores/useStatsStore';
+import { useDailyChallengeStore } from '@/stores/useDailyChallengeStore';
 import { useSoundEffects, useBackgroundMusic } from '@/hooks/useSoundEffects';
 import { submitScore } from '@/lib/tx';
 import toast from 'react-hot-toast';
@@ -122,9 +124,24 @@ function useImages() {
   return { images, loading, selectImagesFromPool, imagePool };
 }
 
-function getRandomImages(images: string[], count: number): string[] {
+function getRandomImages(images: string[], count: number, seed?: number): string[] {
+  if (seed !== undefined) {
+    // Use seeded random for daily challenges
+    const seededRandom = create_seeded_random(seed);
+    const shuffled = [...images].sort(() => seededRandom() - 0.5);
+    return shuffled.slice(0, count);
+  }
   const shuffled = [...images].sort(() => Math.random() - 0.5);
   return shuffled.slice(0, count);
+}
+
+// Seeded random number generator for deterministic card layouts
+function create_seeded_random(seed: number): () => number {
+  let state = seed;
+  return () => {
+    state = (state * 9301 + 49297) % 233280;
+    return state / 233280;
+  };
 }
 
 interface GameCard {
@@ -135,6 +152,10 @@ interface GameCard {
 }
 
 export function GameBoard() {
+  const searchParams = useSearchParams();
+  const isDailyChallenge = searchParams?.get('mode') === 'daily-challenge';
+  const challengeId = searchParams?.get('challengeId');
+  
   const hasAwardedRef = useRef(false);
   const [cards, setCards] = useState<GameCard[]>([]);
   const [flippedCards, setFlippedCards] = useState<number[]>([]);
@@ -164,6 +185,11 @@ export function GameBoard() {
   } = useDifficultyStore();
   const { timerEnabled } = useTimerStore();
   const { setWalletAddress: setStatsWalletAddress, addGameRecord } = useStatsStore();
+  const { 
+    getTodayChallenge, 
+    completeChallenge, 
+    setWalletAddress: setDailyChallengeWalletAddress 
+  } = useDailyChallengeStore();
   
   // Audio hooks
   const { soundEffectsEnabled, soundEffectsVolume, musicEnabled, musicVolume } = useAudioStore();
@@ -183,8 +209,17 @@ export function GameBoard() {
     if (images.length === 0 || !address) return;
     hasAwardedRef.current = false;
     
+    // Get seed for daily challenge mode
+    let seed: number | undefined;
+    if (isDailyChallenge && challengeId) {
+      const challenge = getTodayChallenge();
+      seed = challenge.seed;
+    }
+    
     // Get images based on selected difficulty
-    const selectedImages = selectImagesFromPool(currentDifficulty.pairs);
+    const selectedImages = seed === undefined 
+      ? selectImagesFromPool(currentDifficulty.pairs)
+      : getRandomImages(images, currentDifficulty.pairs, seed);
     
     // Create pairs and shuffle
     const gameCards: GameCard[] = [];
@@ -195,10 +230,18 @@ export function GameBoard() {
       );
     });
     
-    // Shuffle cards
-    for (let i = gameCards.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [gameCards[i], gameCards[j]] = [gameCards[j], gameCards[i]];
+    // Shuffle cards (with seed if daily challenge)
+    if (seed === undefined) {
+      for (let i = gameCards.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [gameCards[i], gameCards[j]] = [gameCards[j], gameCards[i]];
+      }
+    } else {
+      const seededRandom = create_seeded_random(seed + 1); // Use different seed for shuffle
+      for (let i = gameCards.length - 1; i > 0; i--) {
+        const j = Math.floor(seededRandom() * (i + 1));
+        [gameCards[i], gameCards[j]] = [gameCards[j], gameCards[i]];
+      }
     }
     
     setCards(gameCards);
@@ -216,13 +259,24 @@ export function GameBoard() {
     setTimeRemaining(currentDifficulty.timerSeconds);
     lastWarningSecondRef.current = -1;
     
-    // Start timer if enabled
-    if (timerEnabled) {
+    // Start timer if enabled or if daily challenge requires it
+    const challenge = isDailyChallenge ? getTodayChallenge() : null;
+    const shouldStartTimer = timerEnabled || (challenge?.specialCondition.type === 'timer');
+    if (shouldStartTimer) {
       setIsTimerActive(true);
     } else {
       setIsTimerActive(false);
     }
-  }, [images, address, selectImagesFromPool, currentDifficulty.pairs, currentDifficulty.timerSeconds, timerEnabled]);
+  }, [images, address, selectImagesFromPool, currentDifficulty.pairs, currentDifficulty.timerSeconds, timerEnabled, isDailyChallenge, challengeId, getTodayChallenge]);
+
+  // Auto-start daily challenge mode
+  useEffect(() => {
+    if (isDailyChallenge && challengeId && address) {
+      const challenge = getTodayChallenge();
+      setSelectedDifficulty(challenge.difficulty);
+      setShowDifficultySelector(false);
+    }
+  }, [isDailyChallenge, challengeId, address, getTodayChallenge]);
 
   // Initialize game when images are loaded and wallet is connected
   useEffect(() => {
@@ -326,6 +380,7 @@ export function GameBoard() {
     setWalletAddress(address);
     setPointsWalletAddress(address);
     setStatsWalletAddress(address);
+    setDailyChallengeWalletAddress(address);
     
     if (!address) {
       setCards([]);
@@ -334,7 +389,7 @@ export function GameBoard() {
       setIsGameComplete(false);
       setShowDifficultySelector(true);
     }
-  }, [address, setWalletAddress, setPointsWalletAddress, setStatsWalletAddress]);
+  }, [address, setWalletAddress, setPointsWalletAddress, setStatsWalletAddress, setDailyChallengeWalletAddress]);
 
   // Handle timer tick
   const handleTimerTick = useCallback((secondsRemaining: number) => {
@@ -437,7 +492,54 @@ export function GameBoard() {
       };
 
       // Check for achievements AFTER updating stores
-      const newAchievements = checkAndUnlockAchievements(gameData);
+      let newAchievements = checkAndUnlockAchievements(gameData);
+      
+      // Handle daily challenge completion
+      if (isDailyChallenge && challengeId) {
+        const challenge = getTodayChallenge();
+        let conditionMet = false;
+        
+        // Check if special condition is met
+        switch (challenge.specialCondition.type) {
+          case 'max_moves':
+            conditionMet = moves <= challenge.specialCondition.requirement;
+            break;
+          case 'timer':
+            conditionMet = timerEnabled && timeRemaining > 0 && timeRemaining >= (currentDifficulty.timerSeconds - challenge.specialCondition.requirement);
+            break;
+          case 'no_hints':
+            conditionMet = hintsUsed === 0;
+            break;
+          case 'perfect_accuracy': {
+            const accuracy = (currentDifficulty.pairs / moves) * 100;
+            conditionMet = accuracy >= challenge.specialCondition.requirement;
+            break;
+          }
+          case 'combo_streak':
+            conditionMet = highestCombo >= challenge.specialCondition.requirement;
+            break;
+        }
+        
+        // Award bonus points if condition met
+        if (conditionMet) {
+          addPoints(challenge.bonusPoints);
+          toast.success(`🌟 Bonus! +${challenge.bonusPoints} pts for meeting challenge condition!`, {
+            duration: 4000,
+            id: 'challenge-bonus'
+          });
+        }
+        
+        // Complete the challenge
+        const challengeAchievements = completeChallenge(challengeId, moves, finalScore + (conditionMet ? challenge.bonusPoints : 0), conditionMet);
+        newAchievements = [...newAchievements, ...challengeAchievements];
+        
+        // Show challenge completion message
+        toast.success(conditionMet ? '✨ Daily Challenge Completed Perfectly!' : '✓ Daily Challenge Completed!', {
+          duration: 4000,
+          id: 'challenge-complete'
+        });
+      }
+      
       setIsGameComplete(true);
 
       // Record game in stats

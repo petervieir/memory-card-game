@@ -134,6 +134,39 @@ export interface GameCompletionData {
   totalTime?: number;
 }
 
+// Daily Challenge System
+export interface DailyChallenge {
+  id: string; // Format: 'challenge-YYYY-MM-DD'
+  date: string; // Format: 'YYYY-MM-DD'
+  difficulty: DifficultyId;
+  specialCondition: ChallengeCondition;
+  bonusPoints: number;
+  seed: number; // For deterministic card layout
+  description: string;
+}
+
+export interface ChallengeCondition {
+  type: 'max_moves' | 'timer' | 'no_hints' | 'perfect_accuracy' | 'combo_streak';
+  requirement: number;
+  description: string;
+}
+
+export interface DailyChallengeCompletion {
+  challengeId: string;
+  completed: boolean;
+  completedAt?: Date;
+  moves: number;
+  score: number;
+  conditionMet: boolean;
+}
+
+export interface ChallengeStreak {
+  currentStreak: number;
+  longestStreak: number;
+  lastCompletedDate: string | null; // Format: 'YYYY-MM-DD'
+  totalChallengesCompleted: number;
+}
+
 export const ACHIEVEMENTS: Record<string, Achievement> = {
   FIRST_VICTORY: {
     id: 'first_victory',
@@ -314,5 +347,37 @@ export const ACHIEVEMENTS: Record<string, Achievement> = {
       // This will be checked via a separate counter in the points store
       return false; // Handled separately
     }
+  },
+  DAILY_CHALLENGER: {
+    id: 'daily_challenger',
+    name: 'Daily Challenger',
+    description: 'Complete your first daily challenge',
+    icon: '📅',
+    category: 'special',
+    condition: () => false // Handled in daily challenge store
+  },
+  WEEK_WARRIOR: {
+    id: 'week_warrior',
+    name: 'Week Warrior',
+    description: 'Complete 7 daily challenges in a row',
+    icon: '🔥',
+    category: 'special',
+    condition: () => false // Handled in daily challenge store
+  },
+  MONTHLY_MASTER: {
+    id: 'monthly_master',
+    name: 'Monthly Master',
+    description: 'Complete 30 daily challenges in a row',
+    icon: '👑',
+    category: 'special',
+    condition: () => false // Handled in daily challenge store
+  },
+  PERFECT_CHALLENGE: {
+    id: 'perfect_challenge',
+    name: 'Perfect Challenge',
+    description: 'Complete a daily challenge meeting all special conditions',
+    icon: '✨',
+    category: 'special',
+    condition: () => false // Handled in daily challenge store
   }
 };
