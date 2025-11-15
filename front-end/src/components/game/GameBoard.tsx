@@ -206,6 +206,11 @@ export function GameBoard() {
     is_endless_mode_active,
     setWalletAddress: setEndlessModeWalletAddress,
   } = useEndlessModeStore();
+  const {
+    addXP,
+    calculate_game_xp,
+    setWalletAddress: setXPWalletAddress,
+  } = useXPStore();
   
   // Audio hooks
   const { soundEffectsEnabled, soundEffectsVolume, musicEnabled, musicVolume } = useAudioStore();
@@ -431,6 +436,7 @@ export function GameBoard() {
     setStatsWalletAddress(address);
     setDailyChallengeWalletAddress(address);
     setEndlessModeWalletAddress(address);
+    setXPWalletAddress(address);
     
     if (!address) {
       setCards([]);
@@ -439,7 +445,7 @@ export function GameBoard() {
       setIsGameComplete(false);
       setShowDifficultySelector(true);
     }
-  }, [address, setWalletAddress, setPointsWalletAddress, setStatsWalletAddress, setDailyChallengeWalletAddress, setEndlessModeWalletAddress]);
+  }, [address, setWalletAddress, setPointsWalletAddress, setStatsWalletAddress, setDailyChallengeWalletAddress, setEndlessModeWalletAddress, setXPWalletAddress]);
 
   // Handle timer tick
   const handleTimerTick = useCallback((secondsRemaining: number) => {
