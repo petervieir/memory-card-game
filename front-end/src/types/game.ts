@@ -586,6 +586,45 @@ export const UNLOCKABLES: Record<string, Unlockable> = {
   }
 };
 
+// Player titles
+export const PLAYER_TITLES: Record<string, { name: string; color: string; description: string }> = {
+  NOVICE: {
+    name: 'Novice',
+    color: '#9CA3AF', // gray-400
+    description: 'Just starting your memory journey'
+  },
+  APPRENTICE: {
+    name: 'Apprentice',
+    color: '#60A5FA', // blue-400
+    description: 'Learning the basics of memory mastery'
+  },
+  ADEPT: {
+    name: 'Adept',
+    color: '#34D399', // green-400
+    description: 'Becoming skilled in memory games'
+  },
+  EXPERT: {
+    name: 'Expert',
+    color: '#A78BFA', // purple-400
+    description: 'A true memory expert'
+  },
+  MASTER: {
+    name: 'Master',
+    color: '#FBBF24', // yellow-400
+    description: 'Master of memory and recall'
+  },
+  GRANDMASTER: {
+    name: 'Grandmaster',
+    color: '#F59E0B', // amber-500
+    description: 'One of the elite memory champions'
+  },
+  IMMORTAL: {
+    name: 'Immortal',
+    color: '#EC4899', // pink-500
+    description: 'Legendary memory immortal'
+  }
+};
+
 // Level up rewards mapping
 export const LEVEL_REWARDS: Record<number, LevelUpReward> = {
   5: { level: 5, unlockables: ['blue_border'], title: 'apprentice' },
