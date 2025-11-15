@@ -61,12 +61,25 @@ export default function Home() {
           </Link>
 
           <Link
+            href="/endless"
+            className="group block p-6 bg-gradient-to-br from-cyan-500/10 to-blue-500/10 backdrop-blur-sm rounded-lg border-2 border-cyan-500/30 hover:border-cyan-500/50 transition-colors relative overflow-hidden"
+          >
+            <div className="absolute top-2 right-2 text-xs bg-cyan-500 text-white px-2 py-1 rounded-full font-bold">
+              NEW
+            </div>
+            <div className="text-center">
+              <div className="text-4xl mb-3">🌊</div>
+              <h3 className="text-lg font-semibold mb-2">Endless Mode</h3>
+              <p className="text-sm text-muted-foreground">
+                Test your skills with increasing difficulty. 3 mistakes = Game Over!
+              </p>
+            </div>
+          </Link>
+
+          <Link
             href="/challenges"
             className="group block p-6 bg-gradient-to-br from-purple-500/10 to-blue-500/10 backdrop-blur-sm rounded-lg border-2 border-purple-500/30 hover:border-purple-500/50 transition-colors relative overflow-hidden"
           >
-            <div className="absolute top-2 right-2 text-xs bg-purple-500 text-white px-2 py-1 rounded-full font-bold">
-              NEW
-            </div>
             <div className="text-center">
               <div className="text-4xl mb-3">📅</div>
               <h3 className="text-lg font-semibold mb-2">Daily Challenges</h3>

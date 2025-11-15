@@ -230,7 +230,7 @@ export const usePointsStore = create<PointsState>()(
       getAchievementProgress: () => {
         const { unlockedAchievements } = get();
         const totalAchievements = Object.keys(ACHIEVEMENTS).length;
-        const categories = { moves: 0, difficulty: 0, milestone: 0, special: 0, time_attack: 0 };
+        const categories = { moves: 0, difficulty: 0, milestone: 0, special: 0, time_attack: 0, endless: 0 };
         
         // Handle case where unlockedAchievements is undefined (during hydration)
         const achievements = unlockedAchievements || [];

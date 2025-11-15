@@ -117,7 +117,7 @@ export interface Achievement {
   description: string;
   icon: string;
   condition: (gameData: GameCompletionData) => boolean;
-  category: 'moves' | 'difficulty' | 'milestone' | 'special' | 'time_attack';
+  category: 'moves' | 'difficulty' | 'milestone' | 'special' | 'time_attack' | 'endless';
 }
 
 export interface GameCompletionData {
@@ -444,107 +444,69 @@ export const ACHIEVEMENTS: Record<string, Achievement> = {
     category: 'special',
     condition: () => false // Handled in daily challenge store
   },
-  // Level Milestone Achievements
-  LEVEL_5: {
-    id: 'level_5',
-    name: 'Rising Star',
-    description: 'Reach Level 5',
-    icon: '⭐',
-    category: 'milestone',
-    condition: () => false // Handled in XP store
+  ENDLESS_BEGINNER: {
+    id: 'endless_beginner',
+    name: 'Endless Explorer',
+    description: 'Complete your first endless mode run',
+    icon: '🌊',
+    category: 'endless',
+    condition: () => false // Handled in endless mode store
   },
-  LEVEL_10: {
-    id: 'level_10',
-    name: 'Dedicated Player',
-    description: 'Reach Level 10',
-    icon: '🌟',
-    category: 'milestone',
-    condition: () => false // Handled in XP store
+  ENDLESS_SURVIVOR: {
+    id: 'endless_survivor',
+    name: 'Endless Survivor',
+    description: 'Reach level 3 in endless mode',
+    icon: '🛡️',
+    category: 'endless',
+    condition: () => false // Handled in endless mode store
   },
-  LEVEL_25: {
-    id: 'level_25',
-    name: 'Memory Expert',
-    description: 'Reach Level 25',
-    icon: '💫',
-    category: 'milestone',
-    condition: () => false // Handled in XP store
+  ENDLESS_WARRIOR: {
+    id: 'endless_warrior',
+    name: 'Endless Warrior',
+    description: 'Reach level 5 in endless mode',
+    icon: '⚔️',
+    category: 'endless',
+    condition: () => false // Handled in endless mode store
   },
-  LEVEL_50: {
-    id: 'level_50',
-    name: 'Memory Legend',
-    description: 'Reach Level 50',
-    icon: '✨',
-    category: 'milestone',
-    condition: () => false // Handled in XP store
-  },
-  LEVEL_75: {
-    id: 'level_75',
-    name: 'Memory Master',
-    description: 'Reach Level 75',
-    icon: '🌠',
-    category: 'milestone',
-    condition: () => false // Handled in XP store
-  },
-  LEVEL_100: {
-    id: 'level_100',
-    name: 'Immortal Memory',
-    description: 'Reach Level 100',
+  ENDLESS_CHAMPION: {
+    id: 'endless_champion',
+    name: 'Endless Champion',
+    description: 'Complete all 6 difficulties in endless mode',
     icon: '👑',
-    category: 'milestone',
-    condition: () => false // Handled in XP store
-  }
-};
-
-// Player Titles
-export const PLAYER_TITLES: Record<string, PlayerTitle> = {
-  NOVICE: {
-    id: 'novice',
-    name: 'Novice',
-    description: 'Default title for new players',
-    levelRequired: 1,
-    color: '#9ca3af'
+    category: 'endless',
+    condition: () => false // Handled in endless mode store
   },
-  APPRENTICE: {
-    id: 'apprentice',
-    name: 'Apprentice',
-    description: 'Learning the ropes',
-    levelRequired: 5,
-    color: '#60a5fa'
+  ENDLESS_HIGH_SCORER: {
+    id: 'endless_high_scorer',
+    name: 'Endless High Scorer',
+    description: 'Score 1000+ points in a single endless mode run',
+    icon: '💎',
+    category: 'endless',
+    condition: () => false // Handled in endless mode store
   },
-  ADEPT: {
-    id: 'adept',
-    name: 'Adept',
-    description: 'Skilled memory player',
-    levelRequired: 10,
-    color: '#34d399'
+  ENDLESS_LEGEND: {
+    id: 'endless_legend',
+    name: 'Endless Legend',
+    description: 'Score 2500+ points in a single endless mode run',
+    icon: '🔱',
+    category: 'endless',
+    condition: () => false // Handled in endless mode store
   },
-  EXPERT: {
-    id: 'expert',
-    name: 'Expert',
-    description: 'Master of memory',
-    levelRequired: 25,
-    color: '#a78bfa'
+  CLUTCH_PLAYER: {
+    id: 'clutch_player',
+    name: 'Clutch Player',
+    description: 'Complete an endless level with only 1 life remaining',
+    icon: '💪',
+    category: 'endless',
+    condition: () => false // Handled in endless mode store
   },
-  MASTER: {
-    id: 'master',
-    name: 'Memory Master',
-    description: 'Elite memory champion',
-    levelRequired: 50,
-    color: '#f59e0b'
-  },
-  GRANDMASTER: {
-    id: 'grandmaster',
-    name: 'Grandmaster',
-    description: 'Legendary status',
-    levelRequired: 75,
-    color: '#ef4444'
-  },
-  IMMORTAL: {
-    id: 'immortal',
-    name: 'Immortal',
-    description: 'Peak performance',
-    levelRequired: 100,
-    color: '#ec4899'
+  PERFECT_ENDLESS_LEVEL: {
+    id: 'perfect_endless_level',
+    name: 'Perfect Endless Level',
+    description: 'Complete an endless level without losing any lives',
+    icon: '✨',
+    category: 'endless',
+    condition: () => false // Handled in endless mode store
   }
 };
 
