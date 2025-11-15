@@ -117,7 +117,7 @@ export interface Achievement {
   description: string;
   icon: string;
   condition: (gameData: GameCompletionData) => boolean;
-  category: 'moves' | 'difficulty' | 'milestone' | 'special' | 'time_attack';
+  category: 'moves' | 'difficulty' | 'milestone' | 'special' | 'time_attack' | 'endless';
 }
 
 export interface GameCompletionData {
@@ -379,5 +379,69 @@ export const ACHIEVEMENTS: Record<string, Achievement> = {
     icon: '✨',
     category: 'special',
     condition: () => false // Handled in daily challenge store
+  },
+  ENDLESS_BEGINNER: {
+    id: 'endless_beginner',
+    name: 'Endless Explorer',
+    description: 'Complete your first endless mode run',
+    icon: '🌊',
+    category: 'endless',
+    condition: () => false // Handled in endless mode store
+  },
+  ENDLESS_SURVIVOR: {
+    id: 'endless_survivor',
+    name: 'Endless Survivor',
+    description: 'Reach level 3 in endless mode',
+    icon: '🛡️',
+    category: 'endless',
+    condition: () => false // Handled in endless mode store
+  },
+  ENDLESS_WARRIOR: {
+    id: 'endless_warrior',
+    name: 'Endless Warrior',
+    description: 'Reach level 5 in endless mode',
+    icon: '⚔️',
+    category: 'endless',
+    condition: () => false // Handled in endless mode store
+  },
+  ENDLESS_CHAMPION: {
+    id: 'endless_champion',
+    name: 'Endless Champion',
+    description: 'Complete all 6 difficulties in endless mode',
+    icon: '👑',
+    category: 'endless',
+    condition: () => false // Handled in endless mode store
+  },
+  ENDLESS_HIGH_SCORER: {
+    id: 'endless_high_scorer',
+    name: 'Endless High Scorer',
+    description: 'Score 1000+ points in a single endless mode run',
+    icon: '💎',
+    category: 'endless',
+    condition: () => false // Handled in endless mode store
+  },
+  ENDLESS_LEGEND: {
+    id: 'endless_legend',
+    name: 'Endless Legend',
+    description: 'Score 2500+ points in a single endless mode run',
+    icon: '🔱',
+    category: 'endless',
+    condition: () => false // Handled in endless mode store
+  },
+  CLUTCH_PLAYER: {
+    id: 'clutch_player',
+    name: 'Clutch Player',
+    description: 'Complete an endless level with only 1 life remaining',
+    icon: '💪',
+    category: 'endless',
+    condition: () => false // Handled in endless mode store
+  },
+  PERFECT_ENDLESS_LEVEL: {
+    id: 'perfect_endless_level',
+    name: 'Perfect Endless Level',
+    description: 'Complete an endless level without losing any lives',
+    icon: '✨',
+    category: 'endless',
+    condition: () => false // Handled in endless mode store
   }
 };

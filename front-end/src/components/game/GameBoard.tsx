@@ -11,6 +11,7 @@ import { useAudioStore } from '@/stores/useAudioStore';
 import { useTimerStore } from '@/stores/useTimerStore';
 import { useStatsStore } from '@/stores/useStatsStore';
 import { useDailyChallengeStore } from '@/stores/useDailyChallengeStore';
+import { useEndlessModeStore } from '@/stores/useEndlessModeStore';
 import { useSoundEffects, useBackgroundMusic } from '@/hooks/useSoundEffects';
 import { submitScore } from '@/lib/tx';
 import toast from 'react-hot-toast';
@@ -154,6 +155,7 @@ interface GameCard {
 export function GameBoard() {
   const searchParams = useSearchParams();
   const isDailyChallenge = searchParams?.get('mode') === 'daily-challenge';
+  const isEndlessMode = searchParams?.get('mode') === 'endless';
   const challengeId = searchParams?.get('challengeId');
   
   const hasAwardedRef = useRef(false);
@@ -174,7 +176,7 @@ export function GameBoard() {
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [isTimeUp, setIsTimeUp] = useState(false);
   const lastWarningSecondRef = useRef<number>(-1);
-  const { addPoints, incrementGamesPlayed, checkAndUnlockAchievements, setWalletAddress: setPointsWalletAddress, spendPoints, points } = usePointsStore();
+  const { addPoints, incrementGamesPlayed, checkAndUnlockAchievements, setWalletAddress: setPointsWalletAddress, spendPoints, points, unlockedAchievements } = usePointsStore();
   const { images, loading, selectImagesFromPool, imagePool } = useImages();
   const { address } = useWallet();
   const { 
@@ -190,6 +192,16 @@ export function GameBoard() {
     completeChallenge, 
     setWalletAddress: setDailyChallengeWalletAddress 
   } = useDailyChallengeStore();
+  const {
+    currentRun,
+    start_endless_mode,
+    advance_to_next_level,
+    record_mistake,
+    end_endless_mode,
+    get_current_difficulty,
+    is_endless_mode_active,
+    setWalletAddress: setEndlessModeWalletAddress,
+  } = useEndlessModeStore();
   
   // Audio hooks
   const { soundEffectsEnabled, soundEffectsVolume, musicEnabled, musicVolume } = useAudioStore();
@@ -278,6 +290,21 @@ export function GameBoard() {
     }
   }, [isDailyChallenge, challengeId, address, getTodayChallenge]);
 
+  // Auto-start endless mode
+  useEffect(() => {
+    if (isEndlessMode && address) {
+      // Check if we need to start a new endless run
+      if (!is_endless_mode_active()) {
+        start_endless_mode();
+      }
+      
+      // Set difficulty based on current endless run
+      const currentDifficulty = get_current_difficulty();
+      setSelectedDifficulty(currentDifficulty);
+      setShowDifficultySelector(false);
+    }
+  }, [isEndlessMode, address, is_endless_mode_active, start_endless_mode, get_current_difficulty]);
+
   // Initialize game when images are loaded and wallet is connected
   useEffect(() => {
     if (!loading && images.length > 0 && address && !showDifficultySelector) {
@@ -331,6 +358,24 @@ export function GameBoard() {
     } else {
       // Reset combo on miss
       setCurrentCombo(0);
+      
+      // ;; Endless Mode: Track mistakes and reduce lives
+      if (isEndlessMode && is_endless_mode_active()) {
+        record_mistake();
+        const livesLeft = (currentRun?.livesRemaining || 3) - 1;
+        
+        if (livesLeft > 0) {
+          toast.error(`❌ Mistake! ${livesLeft} ${livesLeft === 1 ? 'life' : 'lives'} remaining`, {
+            duration: 2000,
+            id: 'endless-mistake'
+          });
+        } else {
+          toast.error('💔 Game Over! No lives remaining', {
+            duration: 3000,
+            id: 'endless-game-over'
+          });
+        }
+      }
     }
 
     // Increment moves immediately
@@ -381,6 +426,7 @@ export function GameBoard() {
     setPointsWalletAddress(address);
     setStatsWalletAddress(address);
     setDailyChallengeWalletAddress(address);
+    setEndlessModeWalletAddress(address);
     
     if (!address) {
       setCards([]);
@@ -389,7 +435,7 @@ export function GameBoard() {
       setIsGameComplete(false);
       setShowDifficultySelector(true);
     }
-  }, [address, setWalletAddress, setPointsWalletAddress, setStatsWalletAddress, setDailyChallengeWalletAddress]);
+  }, [address, setWalletAddress, setPointsWalletAddress, setStatsWalletAddress, setDailyChallengeWalletAddress, setEndlessModeWalletAddress]);
 
   // Handle timer tick
   const handleTimerTick = useCallback((secondsRemaining: number) => {
@@ -442,6 +488,55 @@ export function GameBoard() {
     if (cards.length > 0 && cards.every(c => c.isMatched) && address && !hasAwardedRef.current) {
       hasAwardedRef.current = true;
       
+      // ;; Endless Mode: Check for game over (no lives)
+      if (isEndlessMode && currentRun && currentRun.livesRemaining === 0) {
+        // End endless mode
+        const finalScore = currentRun.cumulativeScore;
+        const endlessAchievements = end_endless_mode(finalScore);
+        
+        // Unlock endless achievements through points store
+        if (endlessAchievements.length > 0) {
+          const newAchievements = endlessAchievements.filter(id => !unlockedAchievements.includes(id));
+          
+          if (newAchievements.length > 0) {
+            const updatedAchievements = [...unlockedAchievements, ...newAchievements];
+            
+            // Update points store directly
+            usePointsStore.setState((state) => ({
+              unlockedAchievements: updatedAchievements,
+              walletStats: {
+                ...state.walletStats,
+                [address!]: {
+                  ...state.walletStats[address!],
+                  unlockedAchievements: updatedAchievements,
+                }
+              }
+            }));
+            
+            // Show first achievement notification
+            setShowAchievementNotification(newAchievements[0]);
+            setTimeout(() => setShowAchievementNotification(null), 4000);
+            play_sound('achievement_unlock');
+          }
+        }
+        
+        setIsGameComplete(true);
+        play_sound('game_complete');
+        
+        toast.error(`🌊 Endless Mode Complete! Final Score: ${finalScore}`, {
+          duration: 5000,
+          id: 'endless-complete'
+        });
+        
+        // Show game over screen
+        setTimeout(() => {
+          setShowDifficultySelector(true);
+          setCards([]);
+        }, 4000);
+        
+        return; // Exit early, don't process normal completion
+      }
+      
       // Stop timer if active
       if (isTimerActive) {
         setIsTimerActive(false);
@@ -471,7 +566,83 @@ export function GameBoard() {
       const scoreWithCombo = Math.round(rawScore * comboMultiplier);
       const finalScore = Math.round(scoreWithCombo * currentDifficulty.multiplier);
 
-      // Update stores first
+      // ;; Endless Mode: Handle level completion and progression
+      if (isEndlessMode && currentRun && is_endless_mode_active()) {
+        // Add score to cumulative total
+        advance_to_next_level(finalScore);
+        
+        const newCumulativeScore = (currentRun.cumulativeScore || 0) + finalScore;
+        const nextDifficultyIndex = currentRun.currentDifficultyIndex + 1;
+        
+        // Check if we've completed all difficulties
+        if (nextDifficultyIndex >= DIFFICULTY_ORDER.length) {
+          // Completed all levels! End endless mode
+          const endlessAchievements = end_endless_mode(newCumulativeScore);
+          
+          // Unlock endless achievements through points store
+          if (endlessAchievements.length > 0) {
+            const newAchievements = endlessAchievements.filter(id => !unlockedAchievements.includes(id));
+            
+            if (newAchievements.length > 0) {
+              const updatedAchievements = [...unlockedAchievements, ...newAchievements];
+              
+              // Update points store directly
+              usePointsStore.setState((state) => ({
+                unlockedAchievements: updatedAchievements,
+                walletStats: {
+                  ...state.walletStats,
+                  [address!]: {
+                    ...state.walletStats[address!],
+                    unlockedAchievements: updatedAchievements,
+                  }
+                }
+              }));
+              
+              // Show first achievement notification
+              setShowAchievementNotification(newAchievements[0]);
+              setTimeout(() => setShowAchievementNotification(null), 4000);
+              play_sound('achievement_unlock');
+            }
+          }
+          
+          setIsGameComplete(true);
+          
+          toast.success(`🏆 Endless Champion! Completed all difficulties! Final Score: ${newCumulativeScore}`, {
+            duration: 6000,
+            id: 'endless-champion'
+          });
+          
+          play_sound('game_complete');
+          
+          // Show completion screen
+          setTimeout(() => {
+            setShowDifficultySelector(true);
+            setCards([]);
+          }, 5000);
+          
+          return; // Exit early
+        }
+        
+        // Advance to next difficulty
+        const nextDifficulty = DIFFICULTY_ORDER[nextDifficultyIndex] as DifficultyId;
+        
+        toast.success(`🌊 Level Complete! +${finalScore} pts → Advancing to ${DIFFICULTIES[nextDifficulty].name}!`, {
+          duration: 3000,
+          id: 'endless-advance'
+        });
+        
+        play_sound('level_unlock');
+        
+        // Auto-advance to next level after a short delay
+        setTimeout(() => {
+          setSelectedDifficulty(nextDifficulty);
+          initializeGame();
+        }, 2000);
+        
+        return; // Exit early, don't process normal completion rewards
+      }
+
+      // Update stores first (normal mode)
       addPoints(finalScore);
       const newGamesPlayed = incrementGamesPlayed(timerEnabled);
       completeLevel(selectedDifficulty, finalScore, moves);
@@ -812,29 +983,51 @@ export function GameBoard() {
           {/* Game Stats */}
           <div className="flex justify-between items-center mb-6 p-4 bg-white/10 backdrop-blur-sm rounded-lg">
             <div className="flex flex-col gap-1">
-              <span className="text-sm font-medium">
-                {currentDifficulty.emoji} {currentDifficulty.name} {timerEnabled && '⏱️'} - {moves} moves
-              </span>
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-gray-400">
-                  {currentDifficulty.pairs} pairs • Pool: {imagePool.length}/{IMAGE_POOL_SIZE}
-                </span>
-                {currentCombo > 0 && (
-                  <span 
-                    className={`text-xs font-bold px-2 py-0.5 rounded transition-all duration-300 ${
-                      (() => {
-                        if (showComboEffect) return 'bg-orange-500 text-white scale-110 animate-pulse';
-                        if (currentCombo >= 10) return 'bg-red-500 text-white';
-                        if (currentCombo >= 5) return 'bg-orange-500 text-white';
-                        return 'bg-yellow-500 text-white';
-                      })()
-                    }`}
-                  >
-                    🔥 {currentCombo}x Combo
-                    {currentCombo >= 10 && ' 🔥🔥'}
+              {/* ;; Endless Mode: Display special header with lives and cumulative score */}
+              {isEndlessMode && currentRun ? (
+                <>
+                  <span className="text-sm font-bold text-cyan-400">
+                    🌊 ENDLESS MODE - Level {currentRun.levelsCompleted + 1}
                   </span>
-                )}
-              </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs font-medium text-white px-2 py-1 bg-red-500/80 rounded">
+                      ❤️ Lives: {currentRun.livesRemaining}
+                    </span>
+                    <span className="text-xs font-medium text-white px-2 py-1 bg-blue-500/80 rounded">
+                      🏆 Score: {currentRun.cumulativeScore}
+                    </span>
+                    <span className="text-xs text-gray-400">
+                      {currentDifficulty.emoji} {currentDifficulty.name} - {moves} moves
+                    </span>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <span className="text-sm font-medium">
+                    {currentDifficulty.emoji} {currentDifficulty.name} {timerEnabled && '⏱️'} - {moves} moves
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-gray-400">
+                      {currentDifficulty.pairs} pairs • Pool: {imagePool.length}/{IMAGE_POOL_SIZE}
+                    </span>
+                    {currentCombo > 0 && (
+                      <span 
+                        className={`text-xs font-bold px-2 py-0.5 rounded transition-all duration-300 ${
+                          (() => {
+                            if (showComboEffect) return 'bg-orange-500 text-white scale-110 animate-pulse';
+                            if (currentCombo >= 10) return 'bg-red-500 text-white';
+                            if (currentCombo >= 5) return 'bg-orange-500 text-white';
+                            return 'bg-yellow-500 text-white';
+                          })()
+                        }`}
+                      >
+                        🔥 {currentCombo}x Combo
+                        {currentCombo >= 10 && ' 🔥🔥'}
+                      </span>
+                    )}
+                  </div>
+                </>
+              )}
             </div>
             <div className="flex gap-2 items-center">
               {/* Timer Display */}
