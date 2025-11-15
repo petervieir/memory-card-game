@@ -587,41 +587,55 @@ export const UNLOCKABLES: Record<string, Unlockable> = {
 };
 
 // Player titles
-export const PLAYER_TITLES: Record<string, { name: string; color: string; description: string }> = {
+export const PLAYER_TITLES: Record<string, PlayerTitle> = {
   NOVICE: {
+    id: 'novice',
     name: 'Novice',
     color: '#9CA3AF', // gray-400
-    description: 'Just starting your memory journey'
+    description: 'Just starting your memory journey',
+    levelRequired: 1
   },
   APPRENTICE: {
+    id: 'apprentice',
     name: 'Apprentice',
     color: '#60A5FA', // blue-400
-    description: 'Learning the basics of memory mastery'
+    description: 'Learning the basics of memory mastery',
+    levelRequired: 5
   },
   ADEPT: {
+    id: 'adept',
     name: 'Adept',
     color: '#34D399', // green-400
-    description: 'Becoming skilled in memory games'
+    description: 'Becoming skilled in memory games',
+    levelRequired: 10
   },
   EXPERT: {
+    id: 'expert',
     name: 'Expert',
     color: '#A78BFA', // purple-400
-    description: 'A true memory expert'
+    description: 'A true memory expert',
+    levelRequired: 25
   },
   MASTER: {
+    id: 'master',
     name: 'Master',
     color: '#FBBF24', // yellow-400
-    description: 'Master of memory and recall'
+    description: 'Master of memory and recall',
+    levelRequired: 50
   },
   GRANDMASTER: {
+    id: 'grandmaster',
     name: 'Grandmaster',
     color: '#F59E0B', // amber-500
-    description: 'One of the elite memory champions'
+    description: 'One of the elite memory champions',
+    levelRequired: 75
   },
   IMMORTAL: {
+    id: 'immortal',
     name: 'Immortal',
     color: '#EC4899', // pink-500
-    description: 'Legendary memory immortal'
+    description: 'Legendary memory immortal',
+    levelRequired: 100
   }
 };
 
