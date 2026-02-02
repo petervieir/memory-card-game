@@ -1,4 +1,5 @@
 import type { UserSession } from "@stacks/auth";
+import { Storage } from "@stacks/storage";
 
 interface GaiaUploadOptions {
   readonly fileName: string;
@@ -14,7 +15,8 @@ export async function uploadToGaia(
     throw new Error("Wallet not connected");
   }
 
-  return userSession.putFile(fileName, content, {
+  const storage = new Storage({ userSession });
+  return storage.putFile(fileName, content, {
     encrypt: false,
     contentType,
   });
