@@ -66,7 +66,7 @@ export default function GamePage() {
           <ul className="text-sm text-muted-foreground space-y-1">
             <li>• Choose your difficulty level</li>
             <li>• Click cards to flip them over</li>
-            <li>• Match pairs of identical images</li>
+            <li>• Match trios of identical images</li>
             <li>• Complete in fewer moves for bonus points</li>
             <li>• Higher difficulties give more points with multipliers</li>
           </ul>

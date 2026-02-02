@@ -47,22 +47,26 @@ const mockImages = [
 ];
 
 // Helper functions to reduce cognitive complexity
-const findMatchingCards = (cards: HTMLElement[]): [HTMLElement, HTMLElement] | null => {
-  for (let i = 0; i < cards.length - 1; i++) {
-    for (let j = i + 1; j < cards.length; j++) {
-      if (cards[i].getAttribute('data-image') === cards[j].getAttribute('data-image')) {
-        return [cards[i], cards[j]];
-      }
+const findMatchingCards = (cards: HTMLElement[]): [HTMLElement, HTMLElement, HTMLElement] | null => {
+  const imageGroups = groupCardsByImage(cards);
+  for (const group of Object.values(imageGroups)) {
+    if (group.length >= 3) {
+      return [group[0], group[1], group[2]];
     }
   }
   return null;
 };
 
-const findNonMatchingCards = (cards: HTMLElement[]): [HTMLElement, HTMLElement] | null => {
-  for (let i = 0; i < cards.length - 1; i++) {
-    for (let j = i + 1; j < cards.length; j++) {
-      if (cards[i].getAttribute('data-image') !== cards[j].getAttribute('data-image')) {
-        return [cards[i], cards[j]];
+const findNonMatchingCards = (cards: HTMLElement[]): [HTMLElement, HTMLElement, HTMLElement] | null => {
+  for (let i = 0; i < cards.length - 2; i++) {
+    for (let j = i + 1; j < cards.length - 1; j++) {
+      for (let k = j + 1; k < cards.length; k++) {
+        const first = cards[i].getAttribute('data-image');
+        const second = cards[j].getAttribute('data-image');
+        const third = cards[k].getAttribute('data-image');
+        if (first !== second || first !== third) {
+          return [cards[i], cards[j], cards[k]];
+        }
       }
     }
   }
@@ -82,14 +86,16 @@ const groupCardsByImage = (cards: HTMLElement[]): Record<string, HTMLElement[]> 
 const completeAllMatches = async (cards: HTMLElement[]) => {
   const imageGroups = groupCardsByImage(cards);
   
-  for (const pair of Object.values(imageGroups)) {
-    if (pair.length === 2) {
-      fireEvent.click(pair[0]);
-      fireEvent.click(pair[1]);
+  for (const trio of Object.values(imageGroups)) {
+    if (trio.length >= 3) {
+      fireEvent.click(trio[0]);
+      fireEvent.click(trio[1]);
+      fireEvent.click(trio[2]);
       
       await waitFor(() => {
-        expect(pair[0].getAttribute('data-matched')).toBe('true');
-        expect(pair[1].getAttribute('data-matched')).toBe('true');
+        expect(trio[0].getAttribute('data-matched')).toBe('true');
+        expect(trio[1].getAttribute('data-matched')).toBe('true');
+        expect(trio[2].getAttribute('data-matched')).toBe('true');
       }, { timeout: 1500 });
     }
   }
@@ -104,11 +110,13 @@ const makeIncorrectMoves = async (cards: HTMLElement[], count: number) => {
     if (nonMatchingCards) {
       fireEvent.click(nonMatchingCards[0]);
       fireEvent.click(nonMatchingCards[1]);
+      fireEvent.click(nonMatchingCards[2]);
       
       // Wait for cards to flip back
       await waitFor(() => {
         expect(nonMatchingCards[0].getAttribute('data-flipped')).toBe('false');
         expect(nonMatchingCards[1].getAttribute('data-flipped')).toBe('false');
+        expect(nonMatchingCards[2].getAttribute('data-flipped')).toBe('false');
       }, { timeout: 1500 });
     }
   }
@@ -180,12 +188,12 @@ describe('GameBoard', () => {
       });
     });
 
-    it('should initialize game with 16 cards when wallet is connected', async () => {
+    it('should initialize game with 18 cards when wallet is connected', async () => {
       render(<GameBoard />);
 
       await waitFor(() => {
         const cards = screen.getAllByTestId('game-card');
-        expect(cards).toHaveLength(16);
+        expect(cards).toHaveLength(18);
       });
     });
 
@@ -197,7 +205,7 @@ describe('GameBoard', () => {
       });
     });
 
-    it('should create pairs of identical images', async () => {
+    it('should create trios of identical images', async () => {
       render(<GameBoard />);
 
       await waitFor(() => {
@@ -211,9 +219,9 @@ describe('GameBoard', () => {
           }
         });
 
-        // Each image should appear exactly twice
+        // Each image should appear exactly three times
         Object.values(imageCounts).forEach(count => {
-          expect(count).toBe(2);
+          expect(count).toBe(3);
         });
       });
     });
@@ -241,7 +249,7 @@ describe('GameBoard', () => {
 
       await waitFor(() => {
         const cards = screen.getAllByTestId('game-card');
-        expect(cards).toHaveLength(16);
+        expect(cards).toHaveLength(18);
       });
 
       const firstCard = screen.getAllByTestId('game-card')[0];
@@ -252,12 +260,12 @@ describe('GameBoard', () => {
       expect(firstCard.getAttribute('data-flipped')).toBe('true');
     });
 
-    it('should allow flipping up to 2 cards', async () => {
+    it('should allow flipping up to 3 cards', async () => {
       render(<GameBoard />);
 
       await waitFor(() => {
         const cards = screen.getAllByTestId('game-card');
-        expect(cards).toHaveLength(16);
+        expect(cards).toHaveLength(18);
       });
 
       const cards = screen.getAllByTestId('game-card');
@@ -270,9 +278,13 @@ describe('GameBoard', () => {
       fireEvent.click(cards[1]);
       expect(cards[1].getAttribute('data-flipped')).toBe('true');
       
-      // Try to click third card - should not flip
+      // Click third card
       fireEvent.click(cards[2]);
-      expect(cards[2].getAttribute('data-flipped')).toBe('false');
+      expect(cards[2].getAttribute('data-flipped')).toBe('true');
+      
+      // Try to click fourth card - should not flip
+      fireEvent.click(cards[3]);
+      expect(cards[3].getAttribute('data-flipped')).toBe('false');
     });
 
     it('should not allow card interaction when no wallet is connected', async () => {
@@ -287,7 +299,7 @@ describe('GameBoard', () => {
 
       await waitFor(() => {
         const cards = screen.getAllByTestId('game-card');
-        expect(cards).toHaveLength(16);
+        expect(cards).toHaveLength(18);
       });
 
       // Disconnect wallet
@@ -313,19 +325,21 @@ describe('GameBoard', () => {
       });
     });
 
-    it('should increment moves when 2 cards are flipped', async () => {
+    it('should increment moves when 3 cards are flipped', async () => {
       render(<GameBoard />);
 
       await waitFor(() => {
         const cards = screen.getAllByTestId('game-card');
-        expect(cards).toHaveLength(16);
+        expect(cards).toHaveLength(18);
       });
 
       const cards = screen.getAllByTestId('game-card');
       
-      // Click two cards
+      // Click three cards
       fireEvent.click(cards[0]);
       fireEvent.click(cards[1]);
+      fireEvent.click(cards[2]);
+      fireEvent.click(cards[2]);
 
       // Wait for move counter to update
       await waitFor(() => {
@@ -338,7 +352,7 @@ describe('GameBoard', () => {
 
       await waitFor(() => {
         const cards = screen.getAllByTestId('game-card');
-        expect(cards).toHaveLength(16);
+        expect(cards).toHaveLength(18);
       });
 
       const cards = screen.getAllByTestId('game-card');
@@ -347,16 +361,18 @@ describe('GameBoard', () => {
       expect(matchingCards).not.toBeNull();
       if (!matchingCards) return;
 
-      const [card1, card2] = matchingCards;
+      const [card1, card2, card3] = matchingCards;
 
       // Click the matching cards
       fireEvent.click(card1);
       fireEvent.click(card2);
+      fireEvent.click(card3);
 
       // Wait for cards to be marked as matched
       await waitFor(() => {
         expect(card1.getAttribute('data-matched')).toBe('true');
         expect(card2.getAttribute('data-matched')).toBe('true');
+        expect(card3.getAttribute('data-matched')).toBe('true');
       }, { timeout: 1500 });
     });
 
@@ -365,7 +381,7 @@ describe('GameBoard', () => {
 
       await waitFor(() => {
         const cards = screen.getAllByTestId('game-card');
-        expect(cards).toHaveLength(16);
+        expect(cards).toHaveLength(18);
       });
 
       const cards = screen.getAllByTestId('game-card');
@@ -374,22 +390,26 @@ describe('GameBoard', () => {
       expect(nonMatchingCards).not.toBeNull();
       if (!nonMatchingCards) return;
 
-      const [card1, card2] = nonMatchingCards;
+      const [card1, card2, card3] = nonMatchingCards;
 
       // Click the non-matching cards
       fireEvent.click(card1);
       fireEvent.click(card2);
+      fireEvent.click(card3);
 
       // Initially flipped
       expect(card1.getAttribute('data-flipped')).toBe('true');
       expect(card2.getAttribute('data-flipped')).toBe('true');
+      expect(card3.getAttribute('data-flipped')).toBe('true');
 
       // Wait for cards to flip back
       await waitFor(() => {
         expect(card1.getAttribute('data-flipped')).toBe('false');
         expect(card2.getAttribute('data-flipped')).toBe('false');
+        expect(card3.getAttribute('data-flipped')).toBe('false');
         expect(card1.getAttribute('data-matched')).toBe('false');
         expect(card2.getAttribute('data-matched')).toBe('false');
+        expect(card3.getAttribute('data-matched')).toBe('false');
       }, { timeout: 1500 });
     });
   });
@@ -403,12 +423,12 @@ describe('GameBoard', () => {
       });
     });
 
-    it('should award base points (100) when game is completed', async () => {
+    it('should award points (capped at 10) when game is completed', async () => {
       render(<GameBoard />);
 
       await waitFor(() => {
         const cards = screen.getAllByTestId('game-card');
-        expect(cards).toHaveLength(16);
+        expect(cards).toHaveLength(18);
       });
 
       const cards = screen.getAllByTestId('game-card');
@@ -417,6 +437,9 @@ describe('GameBoard', () => {
       // Check that points were awarded and game completion message is shown
       await waitFor(() => {
         expect(mockAddPoints).toHaveBeenCalled();
+        const pointsAwarded = mockAddPoints.mock.calls[mockAddPoints.mock.calls.length - 1][0];
+        expect(pointsAwarded).toBeLessThanOrEqual(10);
+        expect(pointsAwarded).toBeGreaterThan(0);
         expect(mockIncrementGamesPlayed).toHaveBeenCalledTimes(1);
         expect(screen.getByText(/Congratulations!/)).toBeInTheDocument();
       }, { timeout: 5000 });
@@ -427,15 +450,16 @@ describe('GameBoard', () => {
 
       await waitFor(() => {
         const cards = screen.getAllByTestId('game-card');
-        expect(cards).toHaveLength(16);
+        expect(cards).toHaveLength(18);
       });
 
       const cards = screen.getAllByTestId('game-card');
       await completeAllMatches(cards);
 
       await waitFor(() => {
-        // For 8 moves: base 100 + (20-8)*5 = 100 + 60 = 160 points
-        expect(mockAddPoints).toHaveBeenCalledWith(160);
+        const pointsAwarded = mockAddPoints.mock.calls[mockAddPoints.mock.calls.length - 1][0];
+        expect(pointsAwarded).toBeLessThanOrEqual(10);
+        expect(pointsAwarded).toBeGreaterThan(0);
       }, { timeout: 5000 });
     }, 15000);
 
@@ -444,7 +468,7 @@ describe('GameBoard', () => {
 
       await waitFor(() => {
         const cards = screen.getAllByTestId('game-card');
-        expect(cards).toHaveLength(16);
+        expect(cards).toHaveLength(18);
       });
 
       const cards = screen.getAllByTestId('game-card');
@@ -456,10 +480,11 @@ describe('GameBoard', () => {
       await completeAllMatches(cards);
 
       await waitFor(() => {
-        // Should award at least base 100 points (no negative bonus)
+        // Should still award a positive score, capped at 10
         expect(mockAddPoints).toHaveBeenCalledWith(expect.any(Number));
         const pointsAwarded = mockAddPoints.mock.calls[mockAddPoints.mock.calls.length - 1][0];
-        expect(pointsAwarded).toBeGreaterThanOrEqual(100);
+        expect(pointsAwarded).toBeGreaterThan(0);
+        expect(pointsAwarded).toBeLessThanOrEqual(10);
       }, { timeout: 5000 });
     }, 20000);
 
@@ -468,7 +493,7 @@ describe('GameBoard', () => {
 
       await waitFor(() => {
         const cards = screen.getAllByTestId('game-card');
-        expect(cards).toHaveLength(16);
+        expect(cards).toHaveLength(18);
       });
 
       const cards = screen.getAllByTestId('game-card');
@@ -485,7 +510,7 @@ describe('GameBoard', () => {
 
       await waitFor(() => {
         const cards = screen.getAllByTestId('game-card');
-        expect(cards).toHaveLength(16);
+        expect(cards).toHaveLength(18);
       });
 
       const cards = screen.getAllByTestId('game-card');
@@ -533,7 +558,7 @@ describe('GameBoard', () => {
 
       await waitFor(() => {
         const cards = screen.getAllByTestId('game-card');
-        expect(cards).toHaveLength(16);
+        expect(cards).toHaveLength(18);
       });
 
       // Make some moves
@@ -570,14 +595,14 @@ describe('GameBoard', () => {
       });
     });
 
-    it('should initialize with pool size 8 on first game', async () => {
+    it('should initialize with pool size 6 on first game', async () => {
       render(<GameBoard />);
 
-      // After game initialization, pool should be at 8
+      // After game initialization, pool should be at 6
       await waitFor(() => {
         const cards = screen.getAllByTestId('game-card');
-        expect(cards).toHaveLength(16);
-        expect(screen.getByText('Pool: 8/32')).toBeInTheDocument();
+        expect(cards).toHaveLength(18);
+        expect(screen.getByText('Pool: 6/32')).toBeInTheDocument();
       });
     });
 
@@ -590,18 +615,18 @@ describe('GameBoard', () => {
 
       render(<GameBoard />);
 
-      // Wait for initial game (starts with 8)
+      // Wait for initial game (starts with 6)
       await waitFor(() => {
         const cards = screen.getAllByTestId('game-card');
-        expect(cards).toHaveLength(16);
-        expect(screen.getByText('Pool: 8/32')).toBeInTheDocument();
+        expect(cards).toHaveLength(18);
+        expect(screen.getByText('Pool: 6/32')).toBeInTheDocument();
       });
 
       const newGameButton = screen.getByText('New Game');
-      let previousPoolSize = 8;
+      let previousPoolSize = 6;
 
       // Test multiple new games to verify pool growth
-      for (let i = 0; i < 7; i++) { // Should reach 8 + (4 * 6) = 32
+      for (let i = 0; i < 7; i++) { // Should reach 6 + (4 * 7) = 34 (capped at 32)
         fireEvent.click(newGameButton);
 
         await waitFor(() => {
@@ -637,17 +662,17 @@ describe('GameBoard', () => {
       // Wait for initial load
       await waitFor(() => {
         const cards = screen.getAllByTestId('game-card');
-        expect(cards).toHaveLength(16);
+        expect(cards).toHaveLength(18);
       });
 
       const newGameButton = screen.getByText('New Game');
 
       // Click new game multiple times to fill the pool to 32
-      for (let i = 0; i < 7; i++) { // 8 + (4 * 6) = 32
+      for (let i = 0; i < 7; i++) { // 6 + (4 * 7) = 34 (capped at 32)
         fireEvent.click(newGameButton);
         await waitFor(() => {
           const cards = screen.getAllByTestId('game-card');
-          expect(cards).toHaveLength(16);
+          expect(cards).toHaveLength(18);
         });
       }
 
@@ -662,7 +687,7 @@ describe('GameBoard', () => {
       await waitFor(() => {
         expect(screen.getByText('Pool: 32/32')).toBeInTheDocument();
         const cards = screen.getAllByTestId('game-card');
-        expect(cards).toHaveLength(16);
+        expect(cards).toHaveLength(18);
       });
     });
 
@@ -678,17 +703,17 @@ describe('GameBoard', () => {
       // Wait for initial load
       await waitFor(() => {
         const cards = screen.getAllByTestId('game-card');
-        expect(cards).toHaveLength(16);
+        expect(cards).toHaveLength(18);
       });
 
       const newGameButton = screen.getByText('New Game');
 
       // Fill the pool to exactly 32 (all available images)
-      for (let i = 0; i < 6; i++) { // 8 + (4 * 6) = 32
+      for (let i = 0; i < 7; i++) { // 6 + (4 * 7) = 34 (capped at 32)
         fireEvent.click(newGameButton);
         await waitFor(() => {
           const cards = screen.getAllByTestId('game-card');
-          expect(cards).toHaveLength(16);
+          expect(cards).toHaveLength(18);
         });
       }
 
@@ -703,7 +728,7 @@ describe('GameBoard', () => {
       await waitFor(() => {
         expect(screen.getByText('Pool: 32/32')).toBeInTheDocument();
         const cards = screen.getAllByTestId('game-card');
-        expect(cards).toHaveLength(16);
+        expect(cards).toHaveLength(18);
       });
     });
   });
@@ -728,12 +753,12 @@ describe('GameBoard', () => {
 
       await waitFor(() => {
         const cards = screen.getAllByTestId('game-card');
-        expect(cards).toHaveLength(16);
+        expect(cards).toHaveLength(18);
       });
 
-      // Should still have 16 cards even with API failure
+      // Should still have 18 cards even with API failure
       const cards = screen.getAllByTestId('game-card');
-      expect(cards).toHaveLength(16);
+      expect(cards).toHaveLength(18);
       
       // Verify that error was logged (but suppressed from output)
       expect(consoleSpy).toHaveBeenCalledWith('Failed to load images:', expect.any(Error));

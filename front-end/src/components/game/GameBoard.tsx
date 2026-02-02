@@ -242,12 +242,13 @@ export function GameBoard() {
       ? selectImagesFromPool(currentDifficulty.pairs)
       : getRandomImages(images, currentDifficulty.pairs, seed);
     
-    // Create pairs and shuffle
+    // Create trios and shuffle
     const gameCards: GameCard[] = [];
     selectedImages.forEach((imageSrc, index) => {
       gameCards.push(
-        { id: index * 2, imageSrc, isFlipped: false, isMatched: false },
-        { id: index * 2 + 1, imageSrc, isFlipped: false, isMatched: false }
+        { id: index * 3, imageSrc, isFlipped: false, isMatched: false },
+        { id: index * 3 + 1, imageSrc, isFlipped: false, isMatched: false },
+        { id: index * 3 + 2, imageSrc, isFlipped: false, isMatched: false }
       );
     });
     
@@ -323,21 +324,22 @@ export function GameBoard() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading, images, address, showDifficultySelector]);
 
-  // Check for matches when two cards are flipped
+  // Check for matches when three cards are flipped
   useEffect(() => {
-    if (flippedCards.length !== 2) return;
+    if (flippedCards.length !== 3) return;
     
-    const [first, second] = flippedCards;
+    const [first, second, third] = flippedCards;
     const firstCard = cards.find(card => card.id === first);
     const secondCard = cards.find(card => card.id === second);
+    const thirdCard = cards.find(card => card.id === third);
     
     // Safety check: ensure both cards exist and are different
-    if (!firstCard || !secondCard || first === second) {
+    if (!firstCard || !secondCard || !thirdCard || first === second || second === third || first === third) {
       setFlippedCards([]);
       return;
     }
     
-    const isMatch = firstCard.imageSrc === secondCard.imageSrc;
+    const isMatch = firstCard.imageSrc === secondCard.imageSrc && firstCard.imageSrc === thirdCard.imageSrc;
 
     // Handle combo logic - use functional updates to avoid dependency issues
     if (isMatch) {
@@ -399,14 +401,15 @@ export function GameBoard() {
       }
     }, 400);
 
+    const matchedIds = new Set([first, second, third]);
     const markAsMatched = (prev: GameCard[]) => prev.map(card => 
-      card.id === first || card.id === second 
+      matchedIds.has(card.id)
         ? { ...card, isMatched: true, isFlipped: false }
         : card
     );
     
     const flipBack = (prev: GameCard[]) => prev.map(card => 
-      card.id === first || card.id === second 
+      matchedIds.has(card.id)
         ? { ...card, isFlipped: false }
         : card
     );
@@ -424,7 +427,7 @@ export function GameBoard() {
       clearTimeout(updateTimeout);
     };
     // We intentionally exclude 'cards', 'currentCombo', and 'highestCombo' to avoid re-running
-    // The effect should only run when flippedCards changes to length 2
+    // The effect should only run when flippedCards changes to length 3
     // Combo state uses functional updates to access current values
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [flippedCards, play_sound]);
@@ -553,13 +556,14 @@ export function GameBoard() {
       }
       
       const basePoints = currentDifficulty.basePoints;
-      const efficiency_bonus = Math.max(0, currentDifficulty.maxMovesForBonus - moves) * 5;
+      const efficiencyMoves = Math.max(0, currentDifficulty.maxMovesForBonus - moves);
+      const efficiency_bonus = Math.round(efficiencyMoves * 0.2);
       
       // Calculate time bonus (only in timer mode)
       let timeBonus = 0;
       if (timerEnabled && timeRemaining > 0) {
-        // Award 2 points per second remaining
-        timeBonus = Math.round(timeRemaining * 2);
+        // Small time bonus to keep total scoring under cap
+        timeBonus = Math.round(timeRemaining * 0.05);
       }
       
       // Calculate combo bonus multiplier
@@ -573,8 +577,8 @@ export function GameBoard() {
       }
       
       const rawScore = basePoints + efficiency_bonus + timeBonus;
-      const scoreWithCombo = Math.round(rawScore * comboMultiplier);
-      const finalScore = Math.round(scoreWithCombo * currentDifficulty.multiplier);
+      const scoreWithCombo = Math.round(rawScore * comboMultiplier * currentDifficulty.multiplier);
+      const finalScore = Math.min(10, Math.max(0, scoreWithCombo));
 
       // ;; Endless Mode: Handle level completion and progression
       if (isEndlessMode && currentRun && is_endless_mode_active()) {
@@ -739,17 +743,26 @@ export function GameBoard() {
             break;
         }
         
-        // Award bonus points if condition met
+        // Award bonus points if condition met (respect game cap)
+        let bonusPointsAwarded = 0;
         if (conditionMet) {
-          addPoints(challenge.bonusPoints);
-          toast.success(`🌟 Bonus! +${challenge.bonusPoints} pts for meeting challenge condition!`, {
-            duration: 4000,
-            id: 'challenge-bonus'
-          });
+          bonusPointsAwarded = Math.min(challenge.bonusPoints, Math.max(0, 10 - finalScore));
+          if (bonusPointsAwarded > 0) {
+            addPoints(bonusPointsAwarded);
+            toast.success(`🌟 Bonus! +${bonusPointsAwarded} pts for meeting challenge condition!`, {
+              duration: 4000,
+              id: 'challenge-bonus'
+            });
+          }
         }
         
         // Complete the challenge
-        const challengeAchievements = completeChallenge(challengeId, moves, finalScore + (conditionMet ? challenge.bonusPoints : 0), conditionMet);
+        const challengeAchievements = completeChallenge(
+          challengeId,
+          moves,
+          finalScore + bonusPointsAwarded,
+          conditionMet
+        );
         newAchievements = [...newAchievements, ...challengeAchievements];
         
         // Award daily challenge XP
@@ -843,7 +856,7 @@ export function GameBoard() {
     const unmatchedCards = cards.filter(card => !card.isMatched && !card.isFlipped);
     
     if (unmatchedCards.length < 2) {
-      toast.error('No pairs left to reveal!');
+      toast.error('No trios left to reveal!');
       return;
     }
 
@@ -860,23 +873,24 @@ export function GameBoard() {
         return acc;
       }, {} as Record<string, GameCard[]>);
       
-      const validPairs = Object.values(cardsByImage).filter(cards => cards.length >= 2);
-      if (validPairs.length === 0) return;
+      const validTrios = Object.values(cardsByImage).filter(cards => cards.length >= 3);
+      if (validTrios.length === 0) return;
       
-      const selectedPair = validPairs[Math.floor(Math.random() * validPairs.length)];
+      const selectedTrio = validTrios[Math.floor(Math.random() * validTrios.length)];
       pairCards.length = 0;
-      pairCards.push(selectedPair[0], selectedPair[1]);
+      pairCards.push(selectedTrio[0], selectedTrio[1], selectedTrio[2]);
     }
 
     // Deduct points
-    const pointsDeducted = spendPoints(50);
+    const hintCost = 1;
+    const pointsDeducted = spendPoints(hintCost);
     if (!pointsDeducted) {
       toast.error('Could not deduct points!');
       return;
     }
 
-    // Reveal the pair
-    const cardIds = [pairCards[0].id, pairCards[1].id];
+    // Reveal the trio
+    const cardIds = [pairCards[0].id, pairCards[1].id, pairCards[2].id];
     setHintRevealedCards(cardIds);
     setIsHintActive(true);
     setHintsUsed(prev => prev + 1);
@@ -884,7 +898,7 @@ export function GameBoard() {
     // Play hint sound
     play_sound('button_click');
     
-    toast.success(`💡 Hint used! -50 points (${hintsRemaining - 1} hints remaining)`, {
+    toast.success(`💡 Hint used! -${hintCost} point (${hintsRemaining - 1} hints remaining)`, {
       duration: 2000,
       id: 'hint-used'
     });
@@ -897,7 +911,7 @@ export function GameBoard() {
   }, [cards, hintsUsed, currentDifficulty.maxHints, points, spendPoints, play_sound, isHintActive]);
 
   const handleCardClick = (cardId: number) => {
-    if (flippedCards.length >= 2 || !address || isHintActive || isTimeUp) return;
+    if (flippedCards.length >= 3 || !address || isHintActive || isTimeUp) return;
     
     // Find the card being clicked
     const clickedCard = cards.find(card => card.id === cardId);
@@ -1066,7 +1080,7 @@ export function GameBoard() {
                   </span>
                   <div className="flex items-center gap-2">
                     <span className="text-xs text-gray-400">
-                      {currentDifficulty.pairs} pairs • Pool: {imagePool.length}/{IMAGE_POOL_SIZE}
+                      {currentDifficulty.pairs} trios • Pool: {imagePool.length}/{IMAGE_POOL_SIZE}
                     </span>
                     {currentCombo > 0 && (
                       <span 
@@ -1155,7 +1169,7 @@ export function GameBoard() {
                 No points awarded this round.
               </p>
               <p className="text-xs text-gray-400 mt-2">
-                Completed {cards.filter(c => c.isMatched).length / 2} out of {currentDifficulty.pairs} pairs
+                Completed {cards.filter(c => c.isMatched).length / 3} out of {currentDifficulty.pairs} trios
               </p>
             </div>
           )}

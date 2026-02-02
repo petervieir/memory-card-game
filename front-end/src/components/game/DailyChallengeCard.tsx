@@ -69,7 +69,7 @@ export function DailyChallengeCard({
           <span className="text-2xl">{difficulty.emoji}</span>
           <div className="flex-1">
             <div className="font-semibold text-white">{difficulty.name} Difficulty</div>
-            <div className="text-sm text-gray-400">{difficulty.pairs} pairs • {difficulty.totalCards} cards</div>
+            <div className="text-sm text-gray-400">{difficulty.pairs} trios • {difficulty.totalCards} cards</div>
           </div>
           <div className="text-right">
             <div className="text-lg font-bold text-yellow-400">+{challenge.bonusPoints}</div>

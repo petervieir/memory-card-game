@@ -93,7 +93,7 @@ export function DifficultySelector({
                 </div>
                 <div className="font-medium text-xs">{difficulty.name}</div>
                 <div className="text-xs text-gray-400">
-                  {difficulty.pairs} pairs
+                  {difficulty.pairs} trios
                 </div>
                 {unlocked && (
                   <div className="text-xs text-gray-500">

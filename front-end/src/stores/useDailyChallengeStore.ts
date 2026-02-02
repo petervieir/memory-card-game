@@ -156,9 +156,9 @@ export const useDailyChallengeStore = create<DailyChallengeState>()(
         const specialCondition = CHALLENGE_CONDITIONS[conditionIndex];
         
         // Calculate bonus points based on difficulty
-        const baseBonusPoints = 500;
+        const baseBonusPoints = 1;
         const difficultyMultiplier = difficultyIndex + 1;
-        const bonusPoints = baseBonusPoints * difficultyMultiplier;
+        const bonusPoints = Math.min(10, baseBonusPoints * difficultyMultiplier);
         
         const challenge: DailyChallenge = {
           id: `challenge-${dateString}`,
