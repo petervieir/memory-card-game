@@ -5,6 +5,7 @@ import { PointsBadge } from '@/components/game/PointsBadge';
 import { BalanceNetworkBadge } from '@/components/wallet/BalanceNetworkBadge';
 import { AudioSettings } from '@/components/game/AudioSettings';
 import { AppShell, PageHeader, SectionCard } from '@/components/ui';
+import { NftMintPanel } from '@/components/game/NftMintPanel';
 import Link from 'next/link';
 
 export default function GamePage() {
@@ -45,6 +46,8 @@ export default function GamePage() {
         </SectionCard>
 
         <GameBoard />
+
+        <NftMintPanel />
       </div>
     </AppShell>
   );
