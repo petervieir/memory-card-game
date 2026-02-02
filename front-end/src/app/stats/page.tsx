@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useStatsStore } from "@/stores/useStatsStore";
 import { usePointsStore } from "@/stores/usePointsStore";
 import { BalanceNetworkBadge } from "@/components/wallet/BalanceNetworkBadge";
+import { AppShell, PageHeader, SectionCard } from "@/components/ui";
 import { DIFFICULTIES, DIFFICULTY_ORDER, type DifficultyId } from "@/types/game";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
@@ -260,61 +261,43 @@ export default function StatsPage() {
 
   if (!mounted) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background to-secondary/20 flex items-center justify-center">
+      <AppShell className="flex items-center justify-center">
         <div className="text-gray-400">Loading statistics...</div>
-      </div>
+      </AppShell>
     );
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-background to-secondary/20">
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <Link 
-            href="/" 
-            className="inline-block text-sm text-blue-400 hover:text-blue-300 mb-4"
-          >
-            ← Back to Home
-          </Link>
-          
-          {/* Balance and Network Badge */}
-          <div className="flex justify-center mb-4">
-            <BalanceNetworkBadge />
-          </div>
-          
-          <h1 className="text-4xl font-bold mb-4">📊 Personal Statistics</h1>
-          <p className="text-gray-400 max-w-2xl mx-auto">
-            Track your progress, analyze your performance, and see how you improve over time
-          </p>
+    <AppShell>
+      <div className="space-y-8">
+        <div className="flex flex-wrap items-center justify-between gap-4 text-sm text-muted-foreground">
+          <Link href="/" className="hover:text-white">← Back to Home</Link>
+          <BalanceNetworkBadge />
         </div>
 
+        <PageHeader
+          title="Personal Statistics"
+          description="Track progress, analyze performance, and spot your improvements over time."
+        />
+
         {statsWithAchievements.totalGamesPlayed === 0 ? (
-          /* No games played yet */
-          <div className="max-w-md mx-auto text-center p-8">
-            <div className="p-8 bg-blue-500/20 border border-blue-500 rounded-lg">
-              <div className="text-5xl mb-4">🎮</div>
-              <h3 className="font-bold text-blue-400 text-xl mb-3">Start Your Journey!</h3>
-              <p className="text-gray-300 mb-6">
-                Play your first game to start tracking your statistics and see your progress over time.
-              </p>
-              <Link 
-                href="/game"
-                className="inline-block px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-lg transition-colors"
-              >
-                Play Now
-              </Link>
-            </div>
-          </div>
+          <SectionCard className="mx-auto max-w-md text-center">
+            <div className="text-4xl mb-3">🎮</div>
+            <h3 className="text-lg font-semibold text-white">Start Your Journey!</h3>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Play your first game to start tracking your statistics.
+            </p>
+            <Link
+              href="/game"
+              className="mt-4 inline-flex rounded-full bg-solv-gold px-5 py-2 text-sm font-semibold text-solv-navy"
+            >
+              Play Now
+            </Link>
+          </SectionCard>
         ) : (
-          /* Statistics Display */
-          <div className="space-y-8 max-w-7xl mx-auto">
-            {/* Overview Stats */}
-            <section>
-              <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-                <span>📈</span> Overview
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="space-y-8">
+            <SectionCard title="Overview">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 <StatCard
                   icon="🎮"
                   title="Total Games"
@@ -360,7 +343,6 @@ export default function StatsPage() {
                   trend="up"
                 />
               </div>
-              
               {statsWithAchievements.totalPlayTime > 0 && (
                 <div className="mt-4">
                   <StatCard
@@ -371,87 +353,66 @@ export default function StatsPage() {
                   />
                 </div>
               )}
-            </section>
+            </SectionCard>
 
-            {/* Per-Difficulty Statistics */}
-            <section>
-              <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-                <span>🎯</span> Performance by Difficulty
-              </h2>
+            <SectionCard title="Performance by Difficulty">
               <div className="space-y-3">
                 {DIFFICULTY_ORDER.map((difficulty) => (
                   <DifficultyStatRow key={difficulty} difficulty={difficulty} />
                 ))}
               </div>
-            </section>
+            </SectionCard>
 
-            {/* Move Efficiency Graph */}
-            <section>
-              <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-                <span>📉</span> Move Efficiency Over Time
-              </h2>
-              <Card className="p-6 bg-gradient-to-br from-white/5 to-white/10 border-white/10">
-                <MoveEfficiencyChart />
-              </Card>
-            </section>
+            <SectionCard title="Move Efficiency Over Time">
+              <MoveEfficiencyChart />
+            </SectionCard>
 
-            {/* Recent Games */}
-            <section>
-              <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-                <span>🕐</span> Recent Games
-              </h2>
-              <Card className="p-6 bg-gradient-to-br from-white/5 to-white/10 border-white/10">
-                <RecentGamesTable />
-              </Card>
-            </section>
+            <SectionCard title="Recent Games">
+              <RecentGamesTable />
+            </SectionCard>
 
-            {/* Achievement Breakdown */}
             {achievementProgress.unlocked > 0 && (
-              <section>
-                <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-                  <span>🏅</span> Achievement Progress
-                </h2>
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-                  <Card className="p-4 bg-gradient-to-br from-white/5 to-white/10 border-white/10 text-center">
+              <SectionCard title="Achievement Progress">
+                <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
+                  <Card className="p-4 bg-white/5 border-white/10 text-center">
                     <div className="text-2xl mb-2">⚡</div>
                     <div className="text-xl font-bold">{achievementProgress.categories.moves}</div>
                     <div className="text-xs text-gray-400">Efficiency</div>
                   </Card>
-                  <Card className="p-4 bg-gradient-to-br from-white/5 to-white/10 border-white/10 text-center">
+                  <Card className="p-4 bg-white/5 border-white/10 text-center">
                     <div className="text-2xl mb-2">🎯</div>
                     <div className="text-xl font-bold">{achievementProgress.categories.difficulty}</div>
                     <div className="text-xs text-gray-400">Mastery</div>
                   </Card>
-                  <Card className="p-4 bg-gradient-to-br from-white/5 to-white/10 border-white/10 text-center">
+                  <Card className="p-4 bg-white/5 border-white/10 text-center">
                     <div className="text-2xl mb-2">🎮</div>
                     <div className="text-xl font-bold">{achievementProgress.categories.milestone}</div>
                     <div className="text-xs text-gray-400">Milestones</div>
                   </Card>
-                  <Card className="p-4 bg-gradient-to-br from-white/5 to-white/10 border-white/10 text-center">
+                  <Card className="p-4 bg-white/5 border-white/10 text-center">
                     <div className="text-2xl mb-2">⭐</div>
                     <div className="text-xl font-bold">{achievementProgress.categories.special}</div>
                     <div className="text-xs text-gray-400">Special</div>
                   </Card>
-                  <Card className="p-4 bg-gradient-to-br from-white/5 to-white/10 border-white/10 text-center">
+                  <Card className="p-4 bg-white/5 border-white/10 text-center">
                     <div className="text-2xl mb-2">⏱️</div>
                     <div className="text-xl font-bold">{achievementProgress.categories.time_attack}</div>
                     <div className="text-xs text-gray-400">Time Attack</div>
                   </Card>
                 </div>
-              </section>
+              </SectionCard>
             )}
 
-            {/* Action Buttons */}
-            <div className="flex flex-wrap gap-4 justify-center pt-8">
+            <div className="flex flex-wrap justify-center gap-3">
               <Link
                 href="/game"
-                className="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-lg transition-colors"
+                className="rounded-full bg-solv-gold px-5 py-2 text-sm font-semibold text-solv-navy"
               >
                 🎮 Play Game
               </Link>
               <Link
                 href="/achievements"
-                className="px-6 py-3 bg-purple-500 hover:bg-purple-600 text-white font-semibold rounded-lg transition-colors"
+                className="rounded-full border border-white/10 px-5 py-2 text-sm font-semibold text-white/80 hover:border-solv-gold/50"
               >
                 🏆 View Achievements
               </Link>
@@ -459,7 +420,7 @@ export default function StatsPage() {
           </div>
         )}
       </div>
-    </main>
+    </AppShell>
   );
 }
 

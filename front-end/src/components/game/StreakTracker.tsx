@@ -16,27 +16,27 @@ interface MilestoneProps {
 }
 
 function Milestone({ count, label, icon, achieved, current }: MilestoneProps) {
-  let containerClass = 'bg-gray-700/30 border-gray-600';
+  let containerClass = 'bg-white/5 border-white/10';
   if (achieved) {
-    containerClass = 'bg-green-500/20 border-green-500/50';
+    containerClass = 'bg-solv-gold/10 border-solv-gold/50';
   } else if (current) {
-    containerClass = 'bg-yellow-500/20 border-yellow-500/50 animate-pulse';
+    containerClass = 'bg-solv-gold/15 border-solv-gold/60 animate-pulse';
   }
 
   const iconClass = achieved ? 'grayscale-0' : 'grayscale opacity-50';
   
-  let countClass = 'text-gray-500';
+  let countClass = 'text-muted-foreground';
   if (achieved) {
-    countClass = 'text-green-400';
+    countClass = 'text-solv-gold';
   } else if (current) {
-    countClass = 'text-yellow-400';
+    countClass = 'text-solv-gold';
   }
 
-  let labelClass = 'text-gray-500';
+  let labelClass = 'text-muted-foreground';
   if (achieved) {
-    labelClass = 'text-green-300';
+    labelClass = 'text-solv-gold/80';
   } else if (current) {
-    labelClass = 'text-yellow-300';
+    labelClass = 'text-solv-gold/80';
   }
 
   return (
@@ -51,7 +51,7 @@ function Milestone({ count, label, icon, achieved, current }: MilestoneProps) {
         {label}
       </div>
       {achieved && (
-        <div className="text-xs text-green-400 mt-1">✓ Unlocked</div>
+        <div className="text-xs text-solv-gold mt-1">✓ Unlocked</div>
       )}
     </div>
   );
@@ -74,36 +74,36 @@ export function StreakTracker({ streak, className = '' }: StreakTrackerProps) {
     <div className={`space-y-4 ${className}`}>
       {/* Current Streak Display */}
       <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-orange-500/10 via-red-500/10 to-yellow-500/10" />
-        <div className="relative bg-gray-800/80 backdrop-blur-sm border-2 border-orange-500/50 rounded-xl p-6">
+        <div className="absolute inset-0 bg-gradient-to-r from-solv-navy via-solv-midnight to-solv-slate" />
+        <div className="relative bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <span className="text-4xl">🔥</span>
               <div>
                 <h3 className="text-xl font-bold text-white">Current Streak</h3>
-                <p className="text-sm text-gray-400">Keep it going!</p>
+                <p className="text-sm text-muted-foreground">Keep it going!</p>
               </div>
             </div>
           </div>
           
           <div className="grid grid-cols-3 gap-4">
-            <div className="text-center p-4 bg-white/5 rounded-lg border border-gray-600">
-              <div className="text-4xl font-bold text-orange-400">{currentStreak}</div>
-              <div className="text-sm text-gray-400 mt-1">Current</div>
+            <div className="text-center p-4 bg-white/5 rounded-lg border border-white/10">
+              <div className="text-4xl font-bold text-solv-gold">{currentStreak}</div>
+              <div className="text-sm text-muted-foreground mt-1">Current</div>
             </div>
-            <div className="text-center p-4 bg-white/5 rounded-lg border border-gray-600">
-              <div className="text-4xl font-bold text-yellow-400">{longestStreak}</div>
-              <div className="text-sm text-gray-400 mt-1">Best</div>
+            <div className="text-center p-4 bg-white/5 rounded-lg border border-white/10">
+              <div className="text-4xl font-bold text-white">{longestStreak}</div>
+              <div className="text-sm text-muted-foreground mt-1">Best</div>
             </div>
-            <div className="text-center p-4 bg-white/5 rounded-lg border border-gray-600">
-              <div className="text-4xl font-bold text-blue-400">{totalCompleted}</div>
-              <div className="text-sm text-gray-400 mt-1">Total</div>
+            <div className="text-center p-4 bg-white/5 rounded-lg border border-white/10">
+              <div className="text-4xl font-bold text-white">{totalCompleted}</div>
+              <div className="text-sm text-muted-foreground mt-1">Total</div>
             </div>
           </div>
 
           {currentStreak > 0 && (
-            <div className="mt-4 p-3 bg-orange-500/10 rounded-lg border border-orange-500/30 text-center">
-              <p className="text-sm text-orange-300">
+            <div className="mt-4 p-3 bg-solv-gold/10 rounded-lg border border-solv-gold/30 text-center">
+              <p className="text-sm text-solv-gold/80">
                 {(() => {
                   if (currentStreak === 1) {
                     return "Great start! Come back tomorrow to continue your streak! 🚀";
@@ -125,7 +125,7 @@ export function StreakTracker({ streak, className = '' }: StreakTrackerProps) {
       </div>
 
       {/* Milestones */}
-      <div className="bg-gray-800/50 border-2 border-gray-700 rounded-xl p-6">
+      <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
         <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
           <span>🎯</span>
           <span>Milestones</span>

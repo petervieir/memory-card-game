@@ -13,12 +13,12 @@ interface DifficultySelectorProps {
 
 function getButtonClassName(unlocked: boolean, isSelected: boolean): string {
   if (!unlocked) {
-    return 'border-gray-700 bg-gray-800/50 opacity-50 cursor-not-allowed';
+    return 'border-white/10 bg-white/5 opacity-40 cursor-not-allowed';
   }
   if (isSelected) {
-    return 'border-blue-500 bg-blue-500/20 shadow-lg scale-105';
+    return 'border-solv-gold/70 bg-solv-gold/10 shadow-lg scale-105';
   }
-  return 'border-gray-600 bg-white/5 hover:border-gray-500 hover:bg-white/10';
+  return 'border-white/10 bg-white/5 hover:border-solv-gold/40 hover:bg-white/10';
 }
 
 export function DifficultySelector({ 
@@ -42,13 +42,13 @@ export function DifficultySelector({
       <h3 className="text-lg font-semibold text-center">Choose Difficulty</h3>
       
       {/* Timer Mode Toggle */}
-      <div className="flex items-center justify-center gap-3 p-3 bg-white/5 rounded-lg border border-gray-600">
+      <div className="flex items-center justify-center gap-3 p-3 bg-white/5 rounded-lg border border-white/10">
         <button
           onClick={handleTimerToggle}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
             timerEnabled
-              ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-lg'
-              : 'bg-gray-700 hover:bg-gray-600 text-gray-300'
+              ? 'bg-solv-gold text-solv-navy shadow-lg'
+              : 'bg-white/10 hover:bg-white/20 text-white/70'
           }`}
         >
           <span className="text-xl">⏱️</span>

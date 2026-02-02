@@ -4,6 +4,7 @@ import { GameBoard } from '@/components/game/GameBoard';
 import { PointsBadge } from '@/components/game/PointsBadge';
 import { BalanceNetworkBadge } from '@/components/wallet/BalanceNetworkBadge';
 import { AudioSettings } from '@/components/game/AudioSettings';
+import { AppShell, PageHeader, SectionCard } from '@/components/ui';
 import Link from 'next/link';
 
 export default function GamePage() {
@@ -11,70 +12,40 @@ export default function GamePage() {
   // const { points, totalEarned } = usePointsStore();
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-background to-secondary/20">
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-          <div className="text-center mb-8">
-          <div className="flex justify-between items-start mb-4">
-            <div className="flex gap-4">
-              <Link 
-                href="/" 
-                className="inline-block text-sm text-blue-400 hover:text-blue-300"
-              >
-                ← Back to Home
-              </Link>
-              <Link 
-                href="/challenges" 
-                className="inline-block text-sm text-purple-400 hover:text-purple-300"
-              >
-                📅 Daily Challenges
-              </Link>
-              <Link 
-                href="/stats" 
-                className="inline-block text-sm text-purple-400 hover:text-purple-300"
-              >
-                📊 Statistics
-              </Link>
-              <Link 
-                href="/achievements" 
-                className="inline-block text-sm text-yellow-400 hover:text-yellow-300"
-              >
-                🏆 Achievements
-              </Link>
-            </div>
-            
-            {/* Audio Settings */}
-            <AudioSettings />
+    <AppShell>
+      <div className="space-y-8">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+            <Link href="/" className="hover:text-white">← Back to Home</Link>
+            <Link href="/challenges" className="hover:text-white">Daily Challenges</Link>
+            <Link href="/stats" className="hover:text-white">Statistics</Link>
+            <Link href="/achievements" className="hover:text-white">Achievements</Link>
           </div>
-          
-          {/* Balance and Network Badge */}
-          <div className="flex justify-center mb-4">
-            <BalanceNetworkBadge />
-          </div>
-          
-          <h1 className="text-3xl font-bold mb-4">Memory Card Game</h1>
-          
-          {/* Points Display */}
-          <div className="max-w-sm mx-auto mb-8 flex justify-center">
-            <PointsBadge />
-          </div>
+          <AudioSettings />
         </div>
 
-        {/* Game Instructions */}
-        <div className="max-w-lg mx-auto mb-8 p-4 bg-white/5 backdrop-blur-sm rounded-lg border border-white/10">
-          <h2 className="text-lg font-semibold mb-2 text-center">How to Play</h2>
-          <ul className="text-sm text-muted-foreground space-y-1">
-            <li>• Choose your difficulty level</li>
-            <li>• Click cards to flip them over</li>
-            <li>• Match trios of identical images</li>
-            <li>• Complete in fewer moves for bonus points</li>
-            <li>• Higher difficulties give more points with multipliers</li>
+        <div className="flex justify-center">
+          <BalanceNetworkBadge />
+        </div>
+
+        <PageHeader
+          title="Memory Card Game"
+          description="Flip, memorize, and match trios. Finish fast for bonus points."
+          actions={<PointsBadge />}
+        />
+
+        <SectionCard className="mx-auto max-w-2xl">
+          <h2 className="text-lg font-semibold text-white">How to Play</h2>
+          <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
+            <li>Choose a difficulty and start the timer if you want the challenge.</li>
+            <li>Flip cards to reveal images.</li>
+            <li>Match trios of identical images to clear the board.</li>
+            <li>Fewer moves mean more bonus points.</li>
           </ul>
-        </div>
+        </SectionCard>
 
-        {/* Game Board */}
         <GameBoard />
       </div>
-    </main>
+    </AppShell>
   );
 }
