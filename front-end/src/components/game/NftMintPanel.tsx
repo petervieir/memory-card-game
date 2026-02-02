@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { openContractCall } from "@stacks/connect";
 import { AnchorMode, stringAsciiCV } from "@stacks/transactions";
 import { useWallet } from "@/contexts/WalletContext";
 import { getStacksNetwork } from "@/lib/stacks";
 import { uploadNftMetadata } from "@/lib/gaia";
+import { safeStorage } from "@/lib/storage";
 import { SectionCard } from "@/components/ui";
 
 interface DappInfo {
@@ -58,6 +59,23 @@ export function NftMintPanel() {
   const contractName = process.env.NEXT_PUBLIC_DAPP_NFT_CONTRACT_NAME || "dapp-promo-nft";
 
   const selectedDapp = TEST_DAPPS.find((dapp) => dapp.id === selectedDappId);
+  const storageKey = address ? `minted_dapp_nfts_${address}` : null;
+
+  useEffect(() => {
+    if (!storageKey) {
+      setMinted([]);
+      return;
+    }
+    const stored = safeStorage.getItem(storageKey);
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored) as MintedNft[];
+        setMinted(parsed);
+      } catch {
+        setMinted([]);
+      }
+    }
+  }, [storageKey]);
 
   const handleMint = async () => {
     if (!address || !selectedDapp) {
@@ -102,15 +120,19 @@ export function NftMintPanel() {
           network: getStacksNetwork(),
           anchorMode: AnchorMode.Any,
           onFinish: ({ txId }) => {
-            setMinted((prev) => [
+            const nextMinted = [
               {
                 dappId: selectedDapp.id,
                 dappName: selectedDapp.name,
                 gaiaUrl,
                 txId,
               },
-              ...prev,
-            ]);
+              ...minted,
+            ];
+            setMinted(nextMinted);
+            if (storageKey) {
+              safeStorage.setItem(storageKey, JSON.stringify(nextMinted));
+            }
             toast.success("Mint transaction submitted!");
             resolve();
           },
