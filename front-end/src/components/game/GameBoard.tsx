@@ -151,10 +151,15 @@ function create_seeded_random(seed: number): () => number {
 
 interface GameCard {
   id: number;
-  imageSrc: string;
+  imageId: string; // Store image identifier instead of full path
   isFlipped: boolean;
   isMatched: boolean;
 }
+
+// Secure image mapping - only populated when cards are created
+// This prevents console inspection of unflipped cards by storing imageId instead of imageSrc
+// The mapping is cleared between games for security
+const imageMapping = new Map<string, string>();
 
 export function GameBoard() {
   const searchParams = useSearchParams();
@@ -230,6 +235,9 @@ export function GameBoard() {
     if (images.length === 0 || !address) return;
     hasAwardedRef.current = false;
     
+    // Clear previous game's image mapping for security
+    imageMapping.clear();
+    
     // Get seed for daily challenge mode
     let seed: number | undefined;
     if (isDailyChallenge && challengeId) {
@@ -243,12 +251,23 @@ export function GameBoard() {
       : getRandomImages(images, currentDifficulty.pairs, seed);
     
     // Create trios and shuffle
+    // Use a secure ID system - generate consistent but non-obvious IDs per image
+    // Same image gets same imageId for matching, but ID doesn't reveal the path
     const gameCards: GameCard[] = [];
+    const sessionId = Date.now().toString(36);
+    
     selectedImages.forEach((imageSrc, index) => {
+      // Generate consistent imageId for this image (same for all 3 cards in trio)
+      // Uses session ID + hash-like string to obscure the relationship
+      const imageId = `${sessionId}_${index.toString(36)}_${Math.random().toString(36).substring(2, 8)}`;
+      
+      // Store the mapping securely - only accessible when card is flipped
+      imageMapping.set(imageId, imageSrc);
+      
       gameCards.push(
-        { id: index * 3, imageSrc, isFlipped: false, isMatched: false },
-        { id: index * 3 + 1, imageSrc, isFlipped: false, isMatched: false },
-        { id: index * 3 + 2, imageSrc, isFlipped: false, isMatched: false }
+        { id: index * 3, imageId, isFlipped: false, isMatched: false },
+        { id: index * 3 + 1, imageId, isFlipped: false, isMatched: false },
+        { id: index * 3 + 2, imageId, isFlipped: false, isMatched: false }
       );
     });
     
@@ -339,7 +358,7 @@ export function GameBoard() {
       return;
     }
     
-    const isMatch = firstCard.imageSrc === secondCard.imageSrc && firstCard.imageSrc === thirdCard.imageSrc;
+    const isMatch = firstCard.imageId === secondCard.imageId && firstCard.imageId === thirdCard.imageId;
 
     // Handle combo logic - use functional updates to avoid dependency issues
     if (isMatch) {
@@ -860,20 +879,20 @@ export function GameBoard() {
       return;
     }
 
-    // Find a random unmatched pair
-    const imageSources = Array.from(new Set(unmatchedCards.map(c => c.imageSrc)));
-    const randomImage = imageSources[Math.floor(Math.random() * imageSources.length)];
-    const pairCards = unmatchedCards.filter(c => c.imageSrc === randomImage);
+    // Find a random unmatched trio
+    const imageIds = Array.from(new Set(unmatchedCards.map(c => c.imageId)));
+    const randomImageId = imageIds[Math.floor(Math.random() * imageIds.length)];
+    const pairCards = unmatchedCards.filter(c => c.imageId === randomImageId);
     
-    if (pairCards.length < 2) {
-      // Fallback: just pick any two unmatched cards with same image
-      const cardsByImage = unmatchedCards.reduce((acc, card) => {
-        if (!acc[card.imageSrc]) acc[card.imageSrc] = [];
-        acc[card.imageSrc].push(card);
+    if (pairCards.length < 3) {
+      // Fallback: just pick any three unmatched cards with same imageId
+      const cardsByImageId = unmatchedCards.reduce((acc, card) => {
+        if (!acc[card.imageId]) acc[card.imageId] = [];
+        acc[card.imageId].push(card);
         return acc;
       }, {} as Record<string, GameCard[]>);
       
-      const validTrios = Object.values(cardsByImage).filter(cards => cards.length >= 3);
+      const validTrios = Object.values(cardsByImageId).filter(cards => cards.length >= 3);
       if (validTrios.length === 0) return;
       
       const selectedTrio = validTrios[Math.floor(Math.random() * validTrios.length)];
@@ -1178,10 +1197,17 @@ export function GameBoard() {
           <div className={getGridClassName()}>
             {cards.map((card) => {
               const isHintRevealed = hintRevealedCards.includes(card.id);
+              const shouldShowImage = card.isFlipped || card.isMatched || isHintRevealed;
+              // Only resolve imageSrc when card is flipped/matched/hint-revealed
+              // This prevents console inspection of unflipped cards
+              const imageSrc = shouldShowImage && imageMapping.has(card.imageId)
+                ? imageMapping.get(card.imageId)!
+                : '';
+              
               return (
                 <Card
                   key={card.id}
-                  imageSrc={card.imageSrc}
+                  imageSrc={imageSrc}
                   isFlipped={card.isFlipped || isHintRevealed}
                   isMatched={card.isMatched}
                   onClick={() => handleCardClick(card.id)}

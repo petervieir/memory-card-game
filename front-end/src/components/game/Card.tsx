@@ -39,7 +39,7 @@ export function Card({ imageSrc, isFlipped, isMatched, onClick, sizeClass = 'w-2
       className={getCardClassName(isMatched, isFlipped, sizeClass)}
     >
       <div className="flex items-center justify-center h-full overflow-hidden rounded-lg">
-        {isFlipped || isMatched ? (
+        {(isFlipped || isMatched) && imageSrc ? (
           <img 
             src={imageSrc} 
             alt="Memory card" 
