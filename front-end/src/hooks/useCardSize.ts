@@ -7,6 +7,8 @@ interface CardSize {
   width: number;
   height: number;
   className: string;
+  gridCols: number;
+  gridRows: number;
 }
 
 export function useCardSize(difficulty: Difficulty): CardSize {
@@ -30,16 +32,29 @@ export function useCardSize(difficulty: Difficulty): CardSize {
   // Calculate optimal card size based on window size and grid
   const calculateCardSize = (): CardSize => {
     const { width: windowWidth, height: windowHeight } = windowSize;
-    const { gridCols, gridRows } = difficulty;
+    const totalCards = difficulty.totalCards;
+    let { gridCols, gridRows } = difficulty;
 
     // Default fallback for SSR
     if (windowWidth === 0) {
       return {
         width: 80,
         height: 96,
-        className: 'w-20 h-24'
+        className: 'w-20 h-24',
+        gridCols,
+        gridRows
       };
     }
+
+    // Mobile-first grid adjustments for better card size on small screens
+    if (windowWidth < 420) {
+      gridCols = Math.min(4, gridCols);
+    } else if (windowWidth < 540) {
+      gridCols = Math.min(5, gridCols);
+    } else if (windowWidth < 768) {
+      gridCols = Math.min(6, gridCols);
+    }
+    gridRows = Math.ceil(totalCards / gridCols);
 
     // Calculate available space (accounting for padding, gaps, and other UI elements)
     const headerHeight = 200; // Approximate height of header, instructions, etc.
@@ -90,7 +105,9 @@ export function useCardSize(difficulty: Difficulty): CardSize {
     return {
       width: cardWidth,
       height: cardHeight,
-      className: getClassName(cardWidth, cardHeight)
+      className: getClassName(cardWidth, cardHeight),
+      gridCols,
+      gridRows
     };
   };
 

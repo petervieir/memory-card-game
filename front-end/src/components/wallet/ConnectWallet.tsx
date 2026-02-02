@@ -58,7 +58,7 @@ export function ConnectWallet() {
           <CardDescription>You are connected to Stacks.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+          <div className="flex items-center justify-between rounded-lg border border-white/10 bg-white/5 p-3">
             <span className="font-mono text-sm">
               {truncateAddress(address)}
             </span>
@@ -94,7 +94,7 @@ export function ConnectWallet() {
       </CardHeader>
       <CardContent>
         <Button
-          variant="stacks"
+          variant="default"
           size="lg"
           className="w-full"
           onClick={connectWallet}

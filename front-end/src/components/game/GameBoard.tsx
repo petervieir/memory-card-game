@@ -974,7 +974,7 @@ export function GameBoard() {
   }, [play_sound, musicEnabled, fade_out]);
 
   const getGridClassName = () => {
-    const { gridCols } = currentDifficulty;
+    const { gridCols } = cardSize;
     // Use explicit Tailwind classes to ensure they're included in the build
     const gridColsClasses = {
       4: 'grid-cols-4',

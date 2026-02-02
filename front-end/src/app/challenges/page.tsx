@@ -6,6 +6,7 @@ import { ConnectWallet } from "@/components/wallet/ConnectWallet";
 import { PointsBadge } from "@/components/game/PointsBadge";
 import { DailyChallengeCard } from "@/components/game/DailyChallengeCard";
 import { StreakTracker } from "@/components/game/StreakTracker";
+import { AppShell, PageHeader, SectionCard } from "@/components/ui";
 import { useDailyChallengeStore } from '@/stores/useDailyChallengeStore';
 import { usePointsStore } from '@/stores/usePointsStore';
 import Link from "next/link";
@@ -34,152 +35,117 @@ export default function DailyChallengePage() {
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-background to-secondary/20">
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
-            <Link
-              href="/"
-              className="text-gray-400 hover:text-white transition-colors"
-            >
-              <span className="text-2xl">←</span>
-            </Link>
-            <div>
-              <h1 className="text-3xl font-bold text-white">Daily Challenges</h1>
-              <p className="text-gray-400 mt-1">Complete challenges to earn bonus rewards and build streaks</p>
-            </div>
-          </div>
+    <AppShell>
+      <div className="space-y-8">
+        <div className="flex flex-wrap items-center justify-between gap-4 text-sm text-muted-foreground">
+          <Link href="/" className="hover:text-white">← Back to Home</Link>
           <PointsBadge />
         </div>
 
-        {/* Wallet Connection */}
+        <PageHeader
+          title="Daily Challenges"
+          description="Complete new challenges every day to earn bonus rewards and build streaks."
+        />
+
         {!walletAddress && (
-          <div className="mb-8 p-6 bg-yellow-500/10 border-2 border-yellow-500/30 rounded-xl">
-            <div className="flex items-center gap-4">
-              <span className="text-4xl">🔐</span>
+          <SectionCard className="mx-auto max-w-2xl">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+              <span className="text-3xl">🔐</span>
               <div className="flex-1">
-                <h3 className="text-lg font-bold text-yellow-400 mb-2">Connect Your Wallet</h3>
-                <p className="text-gray-300 mb-4">
-                  Connect your wallet to participate in daily challenges and track your progress.
+                <h3 className="text-base font-semibold text-white">Connect Your Wallet</h3>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Connect your wallet to participate in daily challenges and track progress.
                 </p>
-                <ConnectWallet />
+                <div className="mt-3">
+                  <ConnectWallet />
+                </div>
               </div>
             </div>
-          </div>
+          </SectionCard>
         )}
 
         {walletAddress && (
-          <div className="space-y-8">
-            {/* Today's Challenge */}
-            <section>
-              <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
-                <span>🎯</span>
-                <span>Today's Challenge</span>
-              </h2>
+          <div className="space-y-6">
+            <SectionCard title="Today's Challenge">
               <DailyChallengeCard
                 challenge={todayChallenge}
                 completion={completion}
                 onStartChallenge={handle_start_challenge}
               />
-            </section>
+            </SectionCard>
 
-            {/* Streak Tracker */}
-            <section>
-              <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
-                <span>📈</span>
-                <span>Your Progress</span>
-              </h2>
+            <SectionCard title="Your Progress">
               <StreakTracker streak={streak} />
-            </section>
+            </SectionCard>
 
-            {/* Info Section */}
-            <section className="bg-gray-800/50 border-2 border-gray-700 rounded-xl p-6">
-              <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-                <span>ℹ️</span>
-                <span>How It Works</span>
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-300">
-                <div className="p-4 bg-white/5 rounded-lg">
-                  <div className="text-2xl mb-2">📅</div>
-                  <h3 className="font-semibold mb-1">Daily Challenges</h3>
-                  <p className="text-sm text-gray-400">
-                    A new challenge is generated every day with unique conditions and rewards.
-                  </p>
-                </div>
-                <div className="p-4 bg-white/5 rounded-lg">
-                  <div className="text-2xl mb-2">🔥</div>
-                  <h3 className="font-semibold mb-1">Build Streaks</h3>
-                  <p className="text-sm text-gray-400">
-                    Complete challenges on consecutive days to build your streak and unlock achievements.
-                  </p>
-                </div>
-                <div className="p-4 bg-white/5 rounded-lg">
-                  <div className="text-2xl mb-2">✨</div>
-                  <h3 className="font-semibold mb-1">Bonus Rewards</h3>
-                  <p className="text-sm text-gray-400">
-                    Meet the special condition to earn bonus points and unlock special achievements.
-                  </p>
-                </div>
-                <div className="p-4 bg-white/5 rounded-lg">
-                  <div className="text-2xl mb-2">🏆</div>
-                  <h3 className="font-semibold mb-1">Unlock Achievements</h3>
-                  <p className="text-sm text-gray-400">
-                    Reach streak milestones (7 days, 30 days) to unlock exclusive achievements.
-                  </p>
-                </div>
+            <SectionCard title="How It Works">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                {[
+                  {
+                    icon: "📅",
+                    title: "Daily Challenges",
+                    text: "A new challenge is generated every day with unique conditions and rewards.",
+                  },
+                  {
+                    icon: "🔥",
+                    title: "Build Streaks",
+                    text: "Complete challenges on consecutive days to build your streak.",
+                  },
+                  {
+                    icon: "✨",
+                    title: "Bonus Rewards",
+                    text: "Meet the special condition to earn bonus points.",
+                  },
+                  {
+                    icon: "🏆",
+                    title: "Unlock Achievements",
+                    text: "Reach streak milestones to unlock exclusive achievements.",
+                  },
+                ].map((item) => (
+                  <div key={item.title} className="rounded-xl border border-white/10 bg-white/5 p-4">
+                    <div className="text-2xl">{item.icon}</div>
+                    <h3 className="mt-3 text-sm font-semibold text-white">{item.title}</h3>
+                    <p className="mt-2 text-xs text-muted-foreground">{item.text}</p>
+                  </div>
+                ))}
               </div>
-            </section>
+            </SectionCard>
 
-            {/* Achievement Showcase */}
-            <section className="bg-gradient-to-r from-purple-500/10 to-blue-500/10 border-2 border-purple-500/30 rounded-xl p-6">
-              <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-                <span>🎖️</span>
-                <span>Challenge Achievements</span>
-              </h2>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="text-center p-4 bg-white/5 rounded-lg">
-                  <div className="text-3xl mb-2">📅</div>
-                  <div className="font-semibold text-sm text-white">Daily Challenger</div>
-                  <div className="text-xs text-gray-400 mt-1">First challenge</div>
-                </div>
-                <div className="text-center p-4 bg-white/5 rounded-lg">
-                  <div className="text-3xl mb-2">🔥</div>
-                  <div className="font-semibold text-sm text-white">Week Warrior</div>
-                  <div className="text-xs text-gray-400 mt-1">7-day streak</div>
-                </div>
-                <div className="text-center p-4 bg-white/5 rounded-lg">
-                  <div className="text-3xl mb-2">👑</div>
-                  <div className="font-semibold text-sm text-white">Monthly Master</div>
-                  <div className="text-xs text-gray-400 mt-1">30-day streak</div>
-                </div>
-                <div className="text-center p-4 bg-white/5 rounded-lg">
-                  <div className="text-3xl mb-2">✨</div>
-                  <div className="font-semibold text-sm text-white">Perfect Challenge</div>
-                  <div className="text-xs text-gray-400 mt-1">Meet all conditions</div>
-                </div>
+            <SectionCard title="Challenge Achievements">
+              <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+                {[
+                  { icon: "📅", title: "Daily Challenger", text: "First challenge" },
+                  { icon: "🔥", title: "Week Warrior", text: "7-day streak" },
+                  { icon: "👑", title: "Monthly Master", text: "30-day streak" },
+                  { icon: "✨", title: "Perfect Challenge", text: "Meet all conditions" },
+                ].map((item) => (
+                  <div key={item.title} className="rounded-xl border border-white/10 bg-white/5 p-4 text-center">
+                    <div className="text-2xl">{item.icon}</div>
+                    <div className="mt-2 text-xs font-semibold text-white">{item.title}</div>
+                    <div className="mt-1 text-[11px] text-muted-foreground">{item.text}</div>
+                  </div>
+                ))}
               </div>
-            </section>
+            </SectionCard>
           </div>
         )}
 
-        {/* Navigation */}
-        <div className="mt-12 flex justify-center gap-4">
+        <div className="flex flex-wrap justify-center gap-3">
           <Link
             href="/game"
-            className="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg transition-colors"
+            className="rounded-full bg-solv-gold px-5 py-2 text-sm font-semibold text-solv-navy"
           >
             Play Regular Game
           </Link>
           <Link
             href="/achievements"
-            className="px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white font-medium rounded-lg transition-colors"
+            className="rounded-full border border-white/10 px-5 py-2 text-sm font-semibold text-white/80 hover:border-solv-gold/50"
           >
             View All Achievements
           </Link>
         </div>
       </div>
-    </main>
+    </AppShell>
   );
 }
 

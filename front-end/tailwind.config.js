@@ -38,6 +38,14 @@ module.exports = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        solv: {
+          navy: "#0B1020",
+          midnight: "#141A2D",
+          slate: "#1E263B",
+          gold: "#F5C451",
+          goldSoft: "#FFE2A8",
+          steel: "#8A94A6",
+        },
         // Stacks-specific colors
         "stacks-purple": "#5546FF",
         "stacks-blue": "#00D4FF",

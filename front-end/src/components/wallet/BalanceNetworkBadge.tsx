@@ -16,17 +16,17 @@ export function BalanceNetworkBadge() {
 
   if (!address) {
     return (
-      <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/5 backdrop-blur-sm rounded-full border border-white/10 text-xs">
+      <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-muted-foreground">
         <div className="w-2 h-2 rounded-full bg-gray-400"></div>
-        <span className="text-muted-foreground">No wallet connected</span>
-        <span className="text-muted-foreground">•</span>
-        <span className="text-muted-foreground capitalize">{networkDisplayName}</span>
+        <span>No wallet connected</span>
+        <span>•</span>
+        <span className="capitalize">{networkDisplayName}</span>
       </div>
     );
   }
 
   return (
-    <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/5 backdrop-blur-sm rounded-full border border-white/10 text-xs">
+    <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs">
       {/* Network indicator */}
       <div className={`w-2 h-2 rounded-full ${
         network === "mainnet" ? "bg-green-400" : 
@@ -35,7 +35,7 @@ export function BalanceNetworkBadge() {
       }`}></div>
       
       {/* Balance */}
-      <span className="font-medium">
+      <span className="font-medium text-white">
         {isLoading ? "..." : error ? "Error" : `${balance} STX`}
       </span>
       
