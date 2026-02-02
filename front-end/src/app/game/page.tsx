@@ -21,6 +21,7 @@ export default function GamePage() {
             <Link href="/challenges" className="hover:text-white">Daily Challenges</Link>
             <Link href="/stats" className="hover:text-white">Statistics</Link>
             <Link href="/achievements" className="hover:text-white">Achievements</Link>
+            <Link href="/nfts" className="hover:text-white">My NFTs</Link>
           </div>
           <AudioSettings />
         </div>

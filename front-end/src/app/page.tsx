@@ -74,6 +74,12 @@ export default function Home() {
               description: "Unlock trophies as you play.",
               icon: "🏆",
             },
+            {
+              href: "/nfts",
+              title: "My dApp NFTs",
+              description: "View your collected dApp promotional NFTs.",
+              icon: "🎨",
+            },
           ].map((card) => (
             <Link
               key={card.href}
