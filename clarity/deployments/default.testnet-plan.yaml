@@ -36,4 +36,11 @@ plan:
             path: contracts/traits/sip-009-trait.clar
             anchor-block-only: true
             clarity-version: 1
+        - contract-publish:
+            contract-name: dapp-promo-nft
+            expected-sender: ST2ZPVCRZZ2T6V8DT7JCMXHRGHH7ZT7RYHPBJDWC0
+            cost: 12800
+            path: contracts/core/dapp-promo-nft.clar
+            anchor-block-only: true
+            clarity-version: 1
       epoch: "2.05"
