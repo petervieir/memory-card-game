@@ -1,5 +1,4 @@
 import type { UserSession, UserData } from "@stacks/auth";
-import { Storage } from "@stacks/storage";
 
 interface GaiaUploadOptions {
   readonly fileName: string;
@@ -29,22 +28,6 @@ function normalizeHubUrl(userSession: UserSession): string | null {
   return hubUrl;
 }
 
-async function verifyGaiaHubAccess(hubUrl: string): Promise<void> {
-  const hubInfoUrl = hubUrl.replace(/\/$/, "") + "/hub_info";
-  try {
-    const response = await fetch(hubInfoUrl, { method: "GET", mode: "cors" });
-    if (!response.ok) {
-      throw new Error(`Hub info failed: ${response.status} ${response.statusText}`);
-    }
-  } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Failed to reach Gaia hub";
-    throw new Error(
-      `Gaia hub blocked (CORS or network). Set NEXT_PUBLIC_GAIA_HUB_URL to a hub that allows your origin. (${message})`
-    );
-  }
-}
-
 export async function uploadToGaia(
   userSession: UserSession,
   { fileName, content, contentType = "application/json" }: GaiaUploadOptions
@@ -54,17 +37,52 @@ export async function uploadToGaia(
   }
 
   try {
-    const storage = new Storage({ userSession });
-    const hubUrl = normalizeHubUrl(userSession);
-    if (hubUrl) {
-      console.log("Gaia hub URL:", hubUrl);
-      await verifyGaiaHubAccess(hubUrl);
+    const userData = userSession.loadUserData() as UserData | null;
+    if (!userData) {
+      throw new Error("Missing wallet session data");
     }
-    
-    return await storage.putFile(fileName, content, {
-      encrypt: false,
-      contentType,
+
+    const hubUrl = normalizeHubUrl(userSession);
+    if (!hubUrl) {
+      throw new Error("Missing Gaia hub URL");
+    }
+
+    if (!userData.appPrivateKey) {
+      throw new Error("Missing Gaia app private key");
+    }
+
+    const response = await fetch("/api/gaia/upload", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        fileName,
+        content,
+        contentType,
+        hubUrl,
+        appPrivateKey: userData.appPrivateKey,
+        gaiaAssociationToken: userData.gaiaAssociationToken,
+      }),
     });
+
+    if (!response.ok) {
+      let errorMessage = `Gaia upload failed (${response.status})`;
+      try {
+        const errorBody = (await response.json()) as { error?: string };
+        if (errorBody?.error) {
+          errorMessage = errorBody.error;
+        }
+      } catch {
+        // ignore parse errors
+      }
+      throw new Error(errorMessage);
+    }
+
+    const json = (await response.json()) as { publicURL?: string };
+    if (!json.publicURL) {
+      throw new Error("Gaia upload failed: missing public URL");
+    }
+
+    return json.publicURL;
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Unknown Gaia error";
