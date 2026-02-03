@@ -9,21 +9,40 @@ interface GaiaUploadOptions {
 
 function normalizeHubUrl(userSession: UserSession): string | null {
   const userData = userSession.loadUserData() as UserData | null;
-  if (!userData?.hubUrl) return null;
+  const envHubUrl = process.env.NEXT_PUBLIC_GAIA_HUB_URL;
+  const hubUrlFromSession = userData?.hubUrl;
+  if (!envHubUrl && !hubUrlFromSession) return null;
 
-  let hubUrl = userData.hubUrl;
+  let hubUrl = envHubUrl || hubUrlFromSession || "";
   const windowRef = globalThis.window;
   if (windowRef?.location.protocol === "https:" && hubUrl.startsWith("http://")) {
     hubUrl = hubUrl.replace(/^http:\/\//, "https://");
-    const sessionData = userSession.store.getSessionData();
-    if (sessionData.userData) {
-      sessionData.userData.hubUrl = hubUrl;
-      sessionData.userData.gaiaHubConfig = undefined;
-      userSession.store.setSessionData(sessionData);
-    }
+  }
+
+  const sessionData = userSession.store.getSessionData();
+  if (sessionData.userData && hubUrl && sessionData.userData.hubUrl !== hubUrl) {
+    sessionData.userData.hubUrl = hubUrl;
+    sessionData.userData.gaiaHubConfig = undefined;
+    userSession.store.setSessionData(sessionData);
   }
 
   return hubUrl;
+}
+
+async function verifyGaiaHubAccess(hubUrl: string): Promise<void> {
+  const hubInfoUrl = hubUrl.replace(/\/$/, "") + "/hub_info";
+  try {
+    const response = await fetch(hubInfoUrl, { method: "GET", mode: "cors" });
+    if (!response.ok) {
+      throw new Error(`Hub info failed: ${response.status} ${response.statusText}`);
+    }
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Failed to reach Gaia hub";
+    throw new Error(
+      `Gaia hub blocked (CORS or network). Set NEXT_PUBLIC_GAIA_HUB_URL to a hub that allows your origin. (${message})`
+    );
+  }
 }
 
 export async function uploadToGaia(
@@ -39,6 +58,7 @@ export async function uploadToGaia(
     const hubUrl = normalizeHubUrl(userSession);
     if (hubUrl) {
       console.log("Gaia hub URL:", hubUrl);
+      await verifyGaiaHubAccess(hubUrl);
     }
     
     return await storage.putFile(fileName, content, {

@@ -769,9 +769,9 @@ export function GameBoard() {
           if (bonusPointsAwarded > 0) {
             addPoints(bonusPointsAwarded);
             toast.success(`🌟 Bonus! +${bonusPointsAwarded} pts for meeting challenge condition!`, {
-              duration: 4000,
-              id: 'challenge-bonus'
-            });
+            duration: 4000,
+            id: 'challenge-bonus'
+          });
           }
         }
         
