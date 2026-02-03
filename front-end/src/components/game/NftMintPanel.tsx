@@ -82,6 +82,10 @@ export function NftMintPanel() {
       toast.error("Connect your wallet first");
       return;
     }
+    if (!userSession?.isUserSignedIn()) {
+      toast.error("Wallet session not authenticated");
+      return;
+    }
     if (!contractAddress) {
       toast.error("Missing NEXT_PUBLIC_DAPP_NFT_CONTRACT_ADDRESS");
       return;
@@ -106,7 +110,16 @@ export function NftMintPanel() {
       };
 
       const gaiaFileName = `${selectedDapp.id}-${Date.now()}`;
-      const gaiaUrl = await uploadNftMetadata(userSession, metadata, gaiaFileName);
+      let gaiaUrl = "";
+      try {
+        gaiaUrl = await uploadNftMetadata(userSession, metadata, gaiaFileName);
+      } catch (gaiaError) {
+        console.error("Gaia upload failed:", gaiaError);
+        const message =
+          gaiaError instanceof Error ? gaiaError.message : "Unknown Gaia error";
+        toast.error(`Gaia upload failed: ${message}`);
+        return;
+      }
 
       await new Promise<void>((resolve, reject) => {
         openContractCall({
