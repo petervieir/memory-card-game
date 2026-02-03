@@ -1,10 +1,29 @@
-import type { UserSession } from "@stacks/auth";
+import type { UserSession, UserData } from "@stacks/auth";
 import { Storage } from "@stacks/storage";
 
 interface GaiaUploadOptions {
   readonly fileName: string;
   readonly content: string;
   readonly contentType?: string;
+}
+
+function normalizeHubUrl(userSession: UserSession): string | null {
+  const userData = userSession.loadUserData() as UserData | null;
+  if (!userData?.hubUrl) return null;
+
+  let hubUrl = userData.hubUrl;
+  const windowRef = globalThis.window;
+  if (windowRef?.location.protocol === "https:" && hubUrl.startsWith("http://")) {
+    hubUrl = hubUrl.replace(/^http:\/\//, "https://");
+    const sessionData = userSession.store.getSessionData();
+    if (sessionData.userData) {
+      sessionData.userData.hubUrl = hubUrl;
+      sessionData.userData.gaiaHubConfig = undefined;
+      userSession.store.setSessionData(sessionData);
+    }
+  }
+
+  return hubUrl;
 }
 
 export async function uploadToGaia(
@@ -17,6 +36,10 @@ export async function uploadToGaia(
 
   try {
     const storage = new Storage({ userSession });
+    const hubUrl = normalizeHubUrl(userSession);
+    if (hubUrl) {
+      console.log("Gaia hub URL:", hubUrl);
+    }
     
     return await storage.putFile(fileName, content, {
       encrypt: false,
