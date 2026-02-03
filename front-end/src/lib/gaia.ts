@@ -15,11 +15,17 @@ export async function uploadToGaia(
     throw new Error("Wallet not connected");
   }
 
-  const storage = new Storage({ userSession });
-  return storage.putFile(fileName, content, {
-    encrypt: false,
-    contentType,
-  });
+  try {
+    const storage = new Storage({ userSession });
+    return await storage.putFile(fileName, content, {
+      encrypt: false,
+      contentType,
+    });
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Unknown Gaia error";
+    throw new Error(`Gaia upload failed: ${message}`);
+  }
 }
 
 export async function uploadNftMetadata(
