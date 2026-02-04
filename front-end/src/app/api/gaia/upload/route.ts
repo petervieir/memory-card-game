@@ -41,6 +41,8 @@ export async function POST(request: Request) {
       );
     }
 
+    console.log("Gaia upload hub URL:", hubUrl);
+
     try {
       new URL(hubUrl);
     } catch {
