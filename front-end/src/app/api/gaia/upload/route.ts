@@ -14,7 +14,15 @@ type GaiaUploadRequest = {
 
 export async function POST(request: Request) {
   try {
-    const body = (await request.json()) as GaiaUploadRequest;
+    let body: GaiaUploadRequest;
+    try {
+      body = (await request.json()) as GaiaUploadRequest;
+    } catch (parseError) {
+      return NextResponse.json(
+        { error: "Invalid JSON in request body" },
+        { status: 400 }
+      );
+    }
     const fileName = body.fileName?.trim();
     const content = body.content;
     const contentType = body.contentType || "application/json";

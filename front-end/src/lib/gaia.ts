@@ -64,22 +64,24 @@ export async function uploadToGaia(
       }),
     });
 
+    const responseText = await response.text();
+    let json: { publicURL?: string; error?: string };
+    
+    try {
+      json = JSON.parse(responseText);
+    } catch (parseError) {
+      throw new Error(
+        `Gaia upload failed: Invalid server response (${response.status}). ${responseText || "Empty response"}`
+      );
+    }
+
     if (!response.ok) {
-      let errorMessage = `Gaia upload failed (${response.status})`;
-      try {
-        const errorBody = (await response.json()) as { error?: string };
-        if (errorBody?.error) {
-          errorMessage = errorBody.error;
-        }
-      } catch {
-        // ignore parse errors
-      }
+      const errorMessage = json?.error || `Gaia upload failed (${response.status})`;
       throw new Error(errorMessage);
     }
 
-    const json = (await response.json()) as { publicURL?: string };
     if (!json.publicURL) {
-      throw new Error("Gaia upload failed: missing public URL");
+      throw new Error("Gaia upload failed: missing public URL in response");
     }
 
     return json.publicURL;
