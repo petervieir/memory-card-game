@@ -32,6 +32,15 @@ export async function POST(request: Request) {
       );
     }
 
+    try {
+      new URL(hubUrl);
+    } catch {
+      return NextResponse.json(
+        { error: "Invalid Gaia hub URL. Use a full https:// URL." },
+        { status: 400 }
+      );
+    }
+
     const hubConfig = await connectToGaiaHub(
       hubUrl,
       appPrivateKey,
@@ -48,6 +57,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ publicURL: uploadResponse.publicURL });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
+    console.error("Gaia upload API failed:", {
+      message,
+      error,
+    });
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
