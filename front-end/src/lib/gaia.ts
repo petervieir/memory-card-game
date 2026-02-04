@@ -51,6 +51,9 @@ export async function uploadToGaia(
       throw new Error("Missing Gaia app private key");
     }
 
+    const sessionData = userSession.store.getSessionData();
+    const gaiaHubConfig = sessionData.userData?.gaiaHubConfig;
+
     const response = await fetch("/api/gaia/upload", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -61,6 +64,7 @@ export async function uploadToGaia(
         hubUrl,
         appPrivateKey: userData.appPrivateKey,
         gaiaAssociationToken: userData.gaiaAssociationToken,
+        gaiaHubConfig,
       }),
     });
 
@@ -70,6 +74,7 @@ export async function uploadToGaia(
     try {
       json = JSON.parse(responseText);
     } catch (parseError) {
+      console.warn("Invalid JSON from Gaia upload API:", parseError);
       throw new Error(
         `Gaia upload failed: Invalid server response (${response.status}). ${responseText || "Empty response"}`
       );
