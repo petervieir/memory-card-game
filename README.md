@@ -52,13 +52,26 @@ Visit [http://localhost:3000](http://localhost:3000)
 - [Getting Started](./docs/GETTING_STARTED.md) - Setup guide
 - [Features](./FEATURES.md) - Complete feature list
 - [Deployment](./deployment/README.md) - Deployment guide
+- [Gaia Hub Setup](./docs/GAIA_HUB_SETUP.md) - Decentralized storage configuration
 
 ## Tech Stack
 
 - **Frontend**: Next.js 13, React 18, TypeScript, Tailwind CSS
 - **Blockchain**: Stacks, Clarity smart contracts
+- **Storage**: Gaia Hub (self-hosted, separate repository)
 - **State**: Zustand
 - **UI**: Radix UI components
+
+## Storage Architecture
+
+This project uses **decentralized storage** via a self-hosted Gaia hub:
+
+- **Repository**: Maintained separately for reusability across projects
+- **Deployment**: Independent containerized deployment (Render.com)
+- **Purpose**: Store NFT metadata and user data off-chain
+- **Integration**: Frontend connects via `NEXT_PUBLIC_GAIA_HUB_URL`
+
+The Gaia hub is **not included** in this repository as it's a standalone service that can be shared across multiple dApps. See [Gaia Hub Setup](./docs/GAIA_HUB_SETUP.md) for complete documentation.
 
 ## License
 

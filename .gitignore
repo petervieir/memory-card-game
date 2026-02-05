@@ -6,6 +6,10 @@ node_modules/
 .env.local
 .env.*.local
 
+# External services (maintained in separate repositories)
+# gaia-hub-render/ - Decentralized storage service (see docs/GAIA_HUB_SETUP.md)
+gaia-hub-render/
+
 # Build outputs
 .next/
 dist/

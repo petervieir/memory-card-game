@@ -40,6 +40,23 @@ deployment/
   - Environment variables configured
 - **Usage**: `./scripts/deploy.sh mainnet`
 
+## 🗄️ Storage Infrastructure
+
+This project requires a **Gaia hub** for decentralized storage:
+
+- **What**: Self-hosted storage service for NFT metadata and user data
+- **Where**: Separate repository, independently deployed
+- **Why**: Reusable across multiple dApps, independent scaling
+- **Documentation**: See [Gaia Hub Setup](../docs/GAIA_HUB_SETUP.md)
+
+### Quick Setup
+
+1. Deploy Gaia hub to Render.com (separate repo)
+2. Set `NEXT_PUBLIC_GAIA_HUB_URL` in Vercel/frontend environment
+3. Test with: `curl https://your-gaia-hub.onrender.com/hub_info`
+
+The Gaia hub is **not included** in this repository as it's a standalone service.
+
 ## 🔑 Required Environment Variables
 
 ### Testnet
@@ -48,6 +65,7 @@ deployment/
 TESTNET_DEPLOYER_ADDRESS=your_testnet_address
 TESTNET_DEPLOYER_PRIVATE_KEY=your_testnet_private_key
 TESTNET_FRONTEND_URL=https://your-testnet-app.com
+NEXT_PUBLIC_GAIA_HUB_URL=https://your-gaia-hub.onrender.com  # Add this!
 GITHUB_TOKEN=your_github_personal_access_token
 ```
 
